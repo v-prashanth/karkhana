@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Clock, Search, ChevronRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";

@@ -31,17 +31,17 @@ const stores = new Map<string, Map<string, WindowEntry>>();
 // Garbage collect expired entries every 5 minutes
 setInterval(() => {
   const now = Date.now();
-  for (const [storeName, store] of stores) {
-    for (const [key, entry] of store) {
-      entry.timestamps = entry.timestamps.filter((t) => now - t < 3600000); // Keep max 1hr
+  stores.forEach((store, storeName) => {
+    store.forEach((entry, key) => {
+      entry.timestamps = entry.timestamps.filter((t: number) => now - t < 3600000); // Keep max 1hr
       if (entry.timestamps.length === 0) {
         store.delete(key);
       }
-    }
+    });
     if (store.size === 0) {
       stores.delete(storeName);
     }
-  }
+  });
 }, 5 * 60 * 1000);
 
 export function rateLimit(name: string, config: RateLimitConfig) {
@@ -62,7 +62,7 @@ export function rateLimit(name: string, config: RateLimitConfig) {
       }
 
       // Remove timestamps outside the current window
-      entry.timestamps = entry.timestamps.filter((t) => t > windowStart);
+      entry.timestamps = entry.timestamps.filter((t: number) => t > windowStart);
 
       if (entry.timestamps.length >= config.maxRequests) {
         const oldestInWindow = entry.timestamps[0];

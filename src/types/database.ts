@@ -402,6 +402,7 @@ export type InsertExpense = Omit<Expense, 'id' | 'created_at' | 'category' | 'co
 export interface DashboardMetrics {
   activeOrders: number;
   totalOutstanding: number;
+  totalPayables: number;
   revenueThisMonth: number;
   paymentsThisMonth: number;
   expensesThisMonth: number;
