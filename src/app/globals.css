@@ -2,26 +2,121 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: 32 33% 97%;
+    --foreground: 215 27% 18%;
+    --card: 0 0% 100%;
+    --card-foreground: 215 27% 18%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 27% 18%;
+    --primary: 18 100% 58%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 28 25% 92%;
+    --secondary-foreground: 215 27% 18%;
+    --muted: 30 21% 90%;
+    --muted-foreground: 215 16% 45%;
+    --accent: 18 100% 58%;
+    --accent-foreground: 0 0% 100%;
+    --border: 24 18% 82%;
+    --input: 24 18% 82%;
+    --ring: 18 100% 58%;
+    --success: 142 71% 45%;
+    --warning: 38 92% 50%;
+    --error: 0 84% 60%;
+    --radius: 0.75rem;
+    --glass-bg: rgba(255, 255, 255, 0.78);
+    --glass-border: rgba(255, 255, 255, 0.8);
+    --glass-shadow: 0 20px 45px -26px rgba(148, 163, 184, 0.55);
+    --panel-bg: rgba(255, 255, 255, 0.66);
+    --panel-border: rgba(255, 255, 255, 0.88);
+    --panel-shadow: 0 30px 80px -42px rgba(148, 163, 184, 0.6);
+    --grid-opacity: 0.12;
+  }
+
+  .dark {
+    --background: 0 0% 3%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 6%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 5%;
+    --popover-foreground: 0 0% 98%;
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 20%;
+    --muted-foreground: 0 0% 85%;
+    --border: 0 0% 25%;
+    --input: 0 0% 25%;
+    --glass-bg: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-shadow: 0 8px 32px -8px rgba(0, 0, 0, 0.5);
+    --panel-bg: rgba(0, 0, 0, 0.4);
+    --panel-border: rgba(255, 255, 255, 0.05);
+    --panel-shadow: 0 30px 80px -42px rgba(0, 0, 0, 0.85);
+    --grid-opacity: 0.08;
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased selection:bg-accent/30 tracking-tight;
+    background-image: 
+      radial-gradient(circle at 15% 0%, rgba(255, 107, 43, 0.05) 0%, transparent 40%),
+      radial-gradient(circle at 85% 100%, rgba(255, 255, 255, 0.05) 0%, transparent 40%);
+    background-attachment: fixed;
+  }
+  ::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+  }
 }
 
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
+  .glass {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(8px);
+    box-shadow: var(--glass-shadow);
+  }
+  .glass-panel {
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    backdrop-filter: blur(12px);
+    box-shadow: var(--panel-shadow);
+  }
+  .premium-gradient-text {
+    background: linear-gradient(to right, hsl(var(--foreground)), hsl(var(--muted-foreground)));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent;
+  }
+  .premium-shadow {
+    @apply shadow-[0_8px_32px_rgba(0,0,0,0.4)];
+  }
+  .app-shell {
+    @apply min-h-screen xl:grid xl:grid-cols-[320px_minmax(0,1fr)];
+  }
+  .app-sidebar {
+    @apply sticky top-0 h-screen p-5;
+  }
+  .app-sidebar-panel {
+    @apply flex h-full flex-col gap-6 rounded-[2rem] p-5;
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    backdrop-filter: blur(32px);
+    box-shadow: var(--panel-shadow);
+  }
+  .app-content {
+    @apply min-w-0 xl:px-6 xl:py-6;
+  }
+  .app-content > main {
+    @apply w-full xl:mx-auto xl:min-h-[calc(100vh-3rem)] xl:max-w-7xl xl:overflow-hidden xl:rounded-[2rem];
+    background: color-mix(in srgb, var(--panel-bg) 65%, transparent);
+    border: 1px solid var(--panel-border);
+    box-shadow: var(--panel-shadow);
   }
 }
