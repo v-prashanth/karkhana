@@ -27,7 +27,7 @@ export const useStore = create<AppState>()(
       organization: null,
       authHydrated: false,
       isOnline: typeof window !== 'undefined' ? navigator.onLine : true,
-      theme: "light",
+      theme: "dark",
       setUser: (user) => set({ user }),
       setOrganization: (organization) => set({ organization }),
       setAuthHydrated: (authHydrated) => set({ authHydrated }),
