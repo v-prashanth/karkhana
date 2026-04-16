@@ -155,11 +155,13 @@ export const authApi = {
   // ─── PASSWORD RESET ────────────────────────────────────────
 
   async resetPassword(email: string) {
-    const supabase = createClient();
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/callback?next=/update-password`,
+    const response = await fetch("/api/auth/reset-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
     });
-    if (error) throw error;
+    const payload = await response.json();
+    if (!response.ok) throw new Error(payload.error || "Could not send reset link");
   },
 
   // ─── SIGN OUT ──────────────────────────────────────────────

@@ -72,7 +72,7 @@ export async function POST(request: Request) {
   }
 
   // 5. Audit Log (Security)
-  await supabase.from('audit_log').insert({
+  await supabase.from('audit_logs').insert({
     organization_id: organization.id,
     user_id: authUser.id,
     action: 'organization_bootstrap',

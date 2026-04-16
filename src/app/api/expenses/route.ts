@@ -1,26 +1,13 @@
 import { NextResponse } from "next/server";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getSecureServerSession } from "@/lib/supabase/server";
 
 export async function GET(request: Request) {
-  const supabase = createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { user, organizationId, supabase } = await getSecureServerSession();
 
-  if (!user) {
+  if (!user || !organizationId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Get user's organization from profile
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("organization_id")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile?.organization_id) {
-    return NextResponse.json({ error: "No organization linked" }, { status: 403 });
-  }
-
-  const organizationId = profile.organization_id;
   const { searchParams } = new URL(request.url);
   const includeCategories = searchParams.get("includeCategories") === "true";
   const month = searchParams.get("month");
@@ -62,21 +49,10 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const supabase = createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { user, organizationId, supabase } = await getSecureServerSession();
 
-  if (!user) {
+  if (!user || !organizationId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("organization_id")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile?.organization_id) {
-    return NextResponse.json({ error: "No organization linked" }, { status: 403 });
   }
 
   const body = await request.json();
@@ -84,7 +60,7 @@ export async function POST(request: Request) {
   const { data, error } = await supabase
     .from("expenses")
     .insert({
-      organization_id: profile.organization_id,
+      organization_id: organizationId,
       category_id: body.category_id || null,
       contact_id: body.contact_id || null,
       amount: body.amount,

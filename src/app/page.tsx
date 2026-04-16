@@ -59,26 +59,21 @@ export default function GatewayPage() {
       const exists = await authApi.checkUserExists(identifier);
       setIsNewUser(!exists);
 
-      if (exists) {
-        if (isEmail) {
-          // They exist and used email -> Ask for password to login
-          setStep("login_password");
-        } else {
-          // They exist and used phone -> Send SMS OTP to login
-          await authApi.signInWithPhone(identifier);
-          setStep("verify_otp");
-          toast("Code sent to your mobile", "success");
-        }
+      // For ALL users (new and existing), the primary flow is OTP.
+      // This fixes the bug where users created via magic link have no password,
+      // causing signInWithPassword() to always fail.
+      if (isEmail) {
+        await authApi.requestEmailOtp(identifier);
       } else {
-        // New user -> Send OTP to create account
-        if (isEmail) {
-          await authApi.requestEmailOtp(identifier);
-        } else {
-          await authApi.signInWithPhone(identifier);
-        }
-        setStep("verify_otp");
-        toast(isEmail ? "Setup code sent to email" : "Setup code sent to mobile", "success");
+        await authApi.signInWithPhone(identifier);
       }
+      setStep("verify_otp");
+      toast(
+        exists
+          ? (isEmail ? "Login code sent to your email" : "Code sent to your mobile")
+          : (isEmail ? "Setup code sent to email" : "Setup code sent to mobile"),
+        "success"
+      );
     } catch (error: any) {
       toast(error.message || "Could not verify details", "error");
     } finally {
@@ -325,6 +320,18 @@ export default function GatewayPage() {
                   <button type="button" onClick={() => { setOtp(""); setStep("enter_identifier"); }} className="w-full text-left text-sm text-white/50 hover:text-white transition-colors">
                     Wait, let me change my {isEmail ? "email" : "number"}
                   </button>
+                  {!isNewUser && isEmail && (
+                    <div className="pt-2 border-t border-white/10">
+                      <Button
+                        type="button"
+                        onClick={() => { setOtp(""); setStep("login_password"); }}
+                        variant="outline"
+                        className="w-full h-12 rounded-lg border-white/10 bg-[transparent] text-sm font-medium text-white/90 hover:bg-white/[0.05] hover:text-white transition-all justify-center"
+                      >
+                        Sign in with password instead
+                      </Button>
+                    </div>
+                  )}
                 </form>
               </motion.div>
             )}
