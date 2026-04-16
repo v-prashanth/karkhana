@@ -75,12 +75,14 @@ export async function middleware(request: NextRequest) {
   const isGatewayPage = request.nextUrl.pathname === '/';
   const isPublicDoc = request.nextUrl.pathname.startsWith('/doc/');
   const isShareLink = request.nextUrl.pathname.startsWith('/share/');
+  const isPasswordReset = request.nextUrl.pathname === '/update-password';
+  const isPublicPage = request.nextUrl.pathname === '/privacy' || request.nextUrl.pathname === '/network-terms';
   const isStatic = request.nextUrl.pathname.startsWith('/_next') || 
                    request.nextUrl.pathname.startsWith('/api') ||
                    request.nextUrl.pathname.includes('.');
 
   // 1. If no session and trying to access protected route (and NOT public)
-  if (!session && !isGatewayPage && !isPublicDoc && !isShareLink && !isStatic) {
+  if (!session && !isGatewayPage && !isPublicDoc && !isShareLink && !isPasswordReset && !isPublicPage && !isStatic) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
