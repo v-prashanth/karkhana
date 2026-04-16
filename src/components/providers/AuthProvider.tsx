@@ -44,6 +44,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        // Recovery link was clicked — redirect to the password update page.
+        // This handles the hash-fragment flow where Supabase appends
+        // #access_token=...&type=recovery to the URL.
+        window.location.href = '/update-password';
+        return;
+      }
+
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
          setAuthHydrated(false);
          // Give the browser time to persist session cookies before the
