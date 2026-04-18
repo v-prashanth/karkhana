@@ -8,9 +8,9 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Fetch the user's profile row
+  // Fetch the user's profile row from the correct table
   const { data: appUser, error: userError } = await supabase
-    .from("profiles")
+    .from("users")
     .select("*, organization:organizations(*)")
     .eq("id", authUser.id)
     .maybeSingle();

@@ -41,7 +41,7 @@ export const sharingApi = {
    */
   async getOrgId(userId: string) {
     const supabase = createClient();
-    const { data } = await supabase.from('profiles').select('organization_id').eq('id', userId).single();
+    const { data } = await supabase.from('users').select('organization_id').eq('id', userId).single();
     return data?.organization_id;
   },
 
