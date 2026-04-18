@@ -22,6 +22,7 @@ import { useStore } from "@/store/useStore";
 
 export default function GatewayPage() {
   const [step, setStep] = useState<"enter_identifier" | "login_password" | "verify_otp">("enter_identifier");
+  const [isPasswordReset, setIsPasswordReset] = useState(false);
   
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -105,10 +106,12 @@ export default function GatewayPage() {
         await authApi.verifyOtp(identifier, otp);
       }
       toast("Verified successfully", "success");
-      router.push("/dashboard");
+      // If this was a password reset flow, go to /update-password.
+      // Otherwise, go to dashboard.
+      router.push(isPasswordReset ? "/update-password" : "/dashboard");
     } catch (error: any) {
       toast(error.message || "Invalid code", "error");
-      setLoading(false); // Reset loading if we fail so they can try again
+      setLoading(false);
     }
   };
 
@@ -128,11 +131,14 @@ export default function GatewayPage() {
   const handleForgotPassword = async () => {
     setLoading(true);
     try {
-      await authApi.resetPassword(identifier);
-      setForgotSent(true);
-      toast("Password reset link sent to your email", "success");
+      // Send an OTP code instead of a link. After they verify, we redirect
+      // to /update-password. This bypasses the unreliable Supabase redirect chain.
+      await authApi.requestEmailOtp(identifier);
+      setIsPasswordReset(true);
+      setStep("verify_otp");
+      toast("Verification code sent to your email", "success");
     } catch (error: any) {
-      toast(error.message || "Could not send reset link", "error");
+      toast(error.message || "Could not send verification code", "error");
     } finally {
       setLoading(false);
     }
@@ -294,7 +300,7 @@ export default function GatewayPage() {
               <motion.div key="otp" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-8">
                 <div>
                   <h2 className="text-3xl font-medium tracking-tight text-white/95">
-                    {isNewUser ? "Create account" : "Enter code"}
+                    {isPasswordReset ? "Reset password" : isNewUser ? "Create account" : "Enter code"}
                   </h2>
                   <p className="text-sm text-white/50 mt-3 font-light max-w-[280px] break-all">
                     Code sent to {identifier}
@@ -315,7 +321,7 @@ export default function GatewayPage() {
                     />
                   </div>
                   <Button type="submit" className="w-full h-12 rounded-lg bg-white text-black text-sm font-medium hover:bg-white/90 transition-all font-bold" disabled={loading || otp.length < 6}>
-                    {loading ? <Loader2 className="h-5 w-5 animate-spin text-black" /> : isNewUser ? "Verify & Continue" : "Verify & Sign In"}
+                    {loading ? <Loader2 className="h-5 w-5 animate-spin text-black" /> : isPasswordReset ? "Verify & Reset Password" : isNewUser ? "Verify & Continue" : "Verify & Sign In"}
                   </Button>
                   <button type="button" onClick={() => { setOtp(""); setStep("enter_identifier"); }} className="w-full text-left text-sm text-white/50 hover:text-white transition-colors">
                     Wait, let me change my {isEmail ? "email" : "number"}
