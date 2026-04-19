@@ -57,7 +57,6 @@ export async function POST(request: Request) {
       }, { status: 403 });
     }
   }
-
   // Viral Discovery - v4 Network Loop
   // Check if this contact's phone exists as a Karkhana Organization
   let onKarkhanaOrgId = null;
@@ -67,10 +66,7 @@ export async function POST(request: Request) {
       .select("id")
       .eq("phone", body.phone.replace(/\D/g, ""))
       .single();
-    
-    if (matchedOrg) {
-      onKarkhanaOrgId = matchedOrg.id;
-    }
+    if (matchedOrg) onKarkhanaOrgId = matchedOrg.id;
   }
 
   const { data, error } = await supabase
@@ -87,6 +83,7 @@ export async function POST(request: Request) {
       notes: body.notes,
       tags: body.tags ?? [],
       is_active: true,
+      total_outstanding: body.total_outstanding ?? 0,
       on_karkhana_org_id: onKarkhanaOrgId, // Link for discovery
     })
     .select("*")

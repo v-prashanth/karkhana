@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { format } from "date-fns";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { formatCurrency } from "@/lib/utils/currency";
+import { DownloadSharedInvoiceButton } from "@/components/shared/DownloadSharedInvoiceButton";
 
 interface SharePageProps {
   params: { token: string };
@@ -45,7 +46,7 @@ export default async function SharedResourcePage({ params }: SharePageProps) {
 
   const { data: invoice } = await admin
     .from("invoices")
-    .select("*, contact:contacts(*), organization:organizations(*)")
+    .select("*, contact:contacts(*), organization:organizations(*), items:invoice_items(*)")
     .eq("id", shareLink.resource_id)
     .single();
 
@@ -81,6 +82,7 @@ export default async function SharedResourcePage({ params }: SharePageProps) {
             </div>
           </div>
           <div className="mt-6 flex flex-wrap gap-3">
+            <DownloadSharedInvoiceButton invoice={invoice} />
             <a
               href="/"
               className="inline-flex items-center rounded-full bg-[#171717] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-black"
