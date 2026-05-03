@@ -14,7 +14,7 @@ export const organizationApi = {
     const organization = useStore.getState().organization;
     if (!organization?.id) throw new Error("Organization not found");
 
-    const response = await fetch("/api/organization", {
+    const response = await fetch("/api/organizations", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

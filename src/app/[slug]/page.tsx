@@ -76,7 +76,9 @@ export default function BusinessProfilePage() {
           className="glass-panel border-accent/20 bg-accent/5 p-3 rounded-2xl flex items-center justify-center gap-3 mb-4"
         >
           <ShieldCheck className="h-4 w-4 text-accent" />
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] italic text-white">Industrial Grade Verified Business</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] italic text-white">
+            {org.is_verified ? "Karkhana Verified Business" : "Karkhana Business Profile"}
+          </p>
         </motion.div>
 
         {/* Profile Header */}
@@ -92,18 +94,26 @@ export default function BusinessProfilePage() {
             ) : (
               <Building2 className="h-12 w-12 text-accent" />
             )}
-            <div className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full bg-accent flex items-center justify-center border-4 border-black text-white">
-               <Crown className="h-4 w-4" />
-            </div>
+            {org.is_verified && (
+              <div className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full bg-accent flex items-center justify-center border-4 border-black text-white">
+                 <Crown className="h-4 w-4" />
+              </div>
+            )}
           </motion.div>
           
           <div className="flex-1 space-y-3">
             <div className="flex items-center gap-2">
               <h1 className="text-4xl font-black tracking-tighter text-white uppercase italic">{org.name}</h1>
             </div>
+            {org.tagline && (
+              <p className="text-sm text-muted-foreground italic">{org.tagline}</p>
+            )}
             <div className="flex flex-wrap items-center gap-4 text-xs font-bold uppercase tracking-widest text-muted-foreground italic">
               <span className="flex items-center gap-1.5"><MapPin className="h-4 w-4 text-accent" /> {org.address?.split(',').pop()?.trim() || "India"}</span>
               <span className="flex items-center gap-1.5"><BriefcaseBusiness className="h-4 w-4 text-accent" /> {org.business_type}</span>
+              {org.year_established && (
+                <span className="flex items-center gap-1.5"><Globe className="h-4 w-4 text-accent" /> Est. {org.year_established}</span>
+              )}
             </div>
           </div>
 
@@ -140,13 +150,13 @@ export default function BusinessProfilePage() {
           </div>
         </div>
 
-        {/* Professional Metrics Card */}
+        {/* Dynamic Metrics */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
            {[
-             { label: "Network Size", val: "50+ Peers", icon: Users },
-             { label: "Transactions", val: "500+ Items", icon: BriefcaseBusiness },
-             { label: "MSME Rank", val: "#12 In Region", icon: Crown },
-             { label: "Trust Score", val: "Elite", icon: ShieldCheck },
+             { label: "Industry", val: org.business_type?.replace("_", " ") || "General", icon: BriefcaseBusiness },
+             { label: "Team Size", val: org.employee_count || "—", icon: Users },
+             { label: "Established", val: org.year_established ? `Since ${org.year_established}` : "—", icon: Globe },
+             { label: "Trust", val: org.is_verified ? "Verified" : "Pending", icon: ShieldCheck },
            ].map((stat) => (
              <Card key={stat.label} className="glass-panel border-white/5 bg-white/[0.01] hover:bg-white/[0.04] transition-all">
                 <CardContent className="p-4 space-y-1">
@@ -174,11 +184,19 @@ export default function BusinessProfilePage() {
                   Professional business serving the {org.business_type} industry with focus on high quality delivery and digital-first invoicing.
                 </p>
                 <div className="flex flex-wrap gap-2 pt-2">
-                  {["Digital Billing", "WhatsApp Support", "GST Verified"].map(tag => (
+                  {(org.capabilities && org.capabilities.length > 0
+                    ? org.capabilities
+                    : ["Digital Billing", "WhatsApp Support"]
+                  ).map(tag => (
                     <span key={tag} className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold uppercase text-muted-foreground tracking-widest text-accent/80">
                       {tag}
                     </span>
                   ))}
+                  {org.gstin && (
+                    <span className="px-3 py-1.5 rounded-full bg-green-500/5 border border-green-500/10 text-[10px] font-bold uppercase tracking-widest text-green-400">
+                      GST Registered
+                    </span>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -241,7 +259,7 @@ export default function BusinessProfilePage() {
 
         {/* Footer */}
         <p className="text-center text-[10px] text-[#444] uppercase tracking-[0.4em] py-10 font-bold opacity-50">
-          KARKHANA BUSINESS PROFILE • VERIFIED 2026
+          KARKHANA BUSINESS PROFILE • {org.is_verified ? "VERIFIED" : "MEMBER"} 2026
         </p>
 
       </div>

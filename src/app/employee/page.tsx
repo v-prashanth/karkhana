@@ -31,7 +31,7 @@ export default function EmployeePortalPage() {
     }
 
     if (user.role !== "worker" && user.role !== "viewer") {
-      router.push("/dashboard");
+      router.push("/home");
     }
   }, [router, user]);
 
@@ -185,7 +185,7 @@ export default function EmployeePortalPage() {
           <CardContent className="p-5">
             <div className="mb-4 flex items-center justify-between">
               <p className="text-sm font-semibold text-foreground">Work Access</p>
-              <Link href="/orders" className="text-xs font-semibold text-accent">
+              <Link href="/jobs" className="text-xs font-semibold text-accent">
                 View work
               </Link>
             </div>

@@ -2,10 +2,14 @@ import { NextResponse } from "next/server";
 import { getSecureServerSession } from "@/lib/supabase/server";
 
 export async function GET(request: Request) {
-  const { user, organizationId, supabase } = await getSecureServerSession();
+  const { user, organizationId, role, supabase } = await getSecureServerSession();
 
   if (!user || !organizationId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (role === "worker") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const { searchParams } = new URL(request.url);
@@ -49,10 +53,14 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const { user, organizationId, supabase } = await getSecureServerSession();
+  const { user, organizationId, role, supabase } = await getSecureServerSession();
 
   if (!user || !organizationId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (role !== "owner" && role !== "accountant" && role !== "manager") {
+    return NextResponse.json({ error: "Forbidden: You cannot log expenses." }, { status: 403 });
   }
 
   const body = await request.json();

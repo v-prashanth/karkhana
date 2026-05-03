@@ -30,6 +30,80 @@ export default async function SharedResourcePage({ params }: SharePageProps) {
     share_link_id: shareLink.id,
   });
 
+  if (shareLink.resource_type === "document") {
+    const { data: document } = await admin
+      .from("documents")
+      .select("*, contact:contacts(*), organization:organizations(*)")
+      .eq("id", shareLink.resource_id)
+      .single();
+
+    if (!document) notFound();
+
+    return (
+      <main className="min-h-screen bg-[#f6f3ee] px-5 py-10 text-[#171717] xl:px-8">
+        <div className="mx-auto max-w-4xl space-y-6">
+          <section className="rounded-[32px] border border-black/10 bg-white p-6 shadow-[0_30px_80px_-50px_rgba(0,0,0,0.35)] xl:p-8">
+            <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#e06b2f]">Shared via Karkhana</p>
+                <div className="mt-3 flex items-center gap-4">
+                  {document.organization?.logo_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={document.organization.logo_url} alt="Business logo" className="h-14 w-14 rounded-2xl border border-black/10 bg-white object-cover p-1" />
+                  ) : null}
+                  <div>
+                    <h1 className="text-3xl font-bold tracking-tight">{document.organization?.name || "Business Workspace"}</h1>
+                    <p className="mt-1 text-sm text-black/65">{document.organization?.address || "Professional business document"}</p>
+                  </div>
+                </div>
+                <p className="mt-2 max-w-xl text-sm leading-6 text-black/65">
+                  Delivery Challan tracking. Verify items and securely acknowledge receipt.
+                </p>
+              </div>
+              <div className="rounded-3xl border border-black/10 bg-[#faf8f5] px-5 py-4 text-sm">
+                <p className="font-semibold">Challan {document.document_number}</p>
+                <p className="mt-1 text-black/60">Date: {format(new Date(document.date), "dd MMM yyyy")}</p>
+              </div>
+            </div>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <a href="/" className="inline-flex items-center rounded-full bg-[#171717] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-black">
+                Join Karkhana free
+              </a>
+            </div>
+          </section>
+
+          <section className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)]">
+            <div className="rounded-[32px] border border-black/10 bg-white p-6 shadow-[0_30px_80px_-50px_rgba(0,0,0,0.35)] xl:p-8">
+               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-black/45">Shipped To</p>
+               <h2 className="mt-3 text-2xl font-bold">{document.contact?.name || "Client"}</h2>
+               <div className="mt-3 space-y-1 text-sm text-black/65">
+                 {document.contact?.phone ? <p>{document.contact.phone}</p> : null}
+                 {document.contact?.address ? <p>{document.contact.address}</p> : null}
+               </div>
+               <div className="mt-5 rounded-2xl border border-black/10 bg-[#faf8f5] p-4 text-sm">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-black/45">Status</p>
+                  <p className="mt-2 font-medium text-[#171717] uppercase">{document.status}</p>
+               </div>
+            </div>
+            
+            <div className="rounded-[32px] border border-black/10 bg-[#171717] p-6 text-white shadow-[0_30px_80px_-50px_rgba(0,0,0,0.55)] xl:p-8">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/60">Items Shipped</p>
+              <p className="mt-3 text-4xl font-bold tracking-tight">{document.items?.length || 0} Items</p>
+              <div className="mt-6 space-y-3">
+                {document.items?.map((item: any, i: number) => (
+                  <div key={i} className="rounded-xl bg-white/10 px-4 py-3 text-sm flex justify-between items-center gap-4">
+                    <span className="font-medium text-white flex-1">{item.description}</span>
+                    <span className="px-3 py-1 bg-white/20 font-bold rounded-lg whitespace-nowrap">{item.quantity} {item.unit || "Nos"}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+    );
+  }
+
   if (shareLink.resource_type !== "invoice") {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#f6f3ee] p-6 text-[#171717]">

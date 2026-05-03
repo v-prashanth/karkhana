@@ -41,6 +41,13 @@ export const invoicesApi = {
     return parseResponse<Invoice>(response);
   },
 
+  async approve(invoiceId: string) {
+    const response = await fetch(`/api/invoices/${invoiceId}/approve`, {
+      method: "PATCH",
+    });
+    return parseResponse<Invoice>(response);
+  },
+
   async getOutstanding() {
     const params = new URLSearchParams({ outstandingOnly: "true" });
     const response = await fetch(`/api/invoices?${params.toString()}`);

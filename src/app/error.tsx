@@ -32,7 +32,7 @@ export default function GlobalError({
             <Button onClick={reset} className="h-12 rounded-2xl bg-accent px-6 text-[11px] font-black uppercase tracking-widest italic">
               <RefreshCw className="mr-2 h-4 w-4" /> Try Again
             </Button>
-            <Link href="/dashboard">
+            <Link href="/home">
               <Button variant="outline" className="h-12 rounded-2xl px-6 text-[11px] font-black uppercase tracking-widest italic">
                 Back to Dashboard
               </Button>

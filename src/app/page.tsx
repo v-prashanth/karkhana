@@ -40,7 +40,7 @@ export default function GatewayPage() {
   // Auth guard: If user is already authenticated, send them to dashboard
   useEffect(() => {
     if (authHydrated && user) {
-      router.replace("/dashboard");
+      router.replace("/home");
     }
   }, [authHydrated, user, router]);
 
@@ -75,8 +75,8 @@ export default function GatewayPage() {
           : (isEmail ? "Setup code sent to email" : "Setup code sent to mobile"),
         "success"
       );
-    } catch (error: any) {
-      toast(error.message || "Could not verify details", "error");
+    } catch (error: unknown) {
+      toast((error as Error).message || "Could not verify details", "error");
     } finally {
       setLoading(false);
     }
@@ -88,9 +88,9 @@ export default function GatewayPage() {
     try {
       await authApi.signInWithEmail(identifier, password);
       // Let the middleware handle the secure routing to dashboard or onboarding!
-      router.push("/dashboard"); 
-    } catch (error: any) {
-      toast(error.message || "Invalid password", "error");
+      router.push("/home"); 
+    } catch (error: unknown) {
+      toast((error as Error).message || "Invalid password", "error");
     } finally {
       setLoading(false);
     }
@@ -108,9 +108,9 @@ export default function GatewayPage() {
       toast("Verified successfully", "success");
       // If this was a password reset flow, go to /update-password.
       // Otherwise, go to dashboard.
-      router.push(isPasswordReset ? "/update-password" : "/dashboard");
-    } catch (error: any) {
-      toast(error.message || "Invalid code", "error");
+      router.push(isPasswordReset ? "/update-password" : "/home");
+    } catch (error: unknown) {
+      toast((error as Error).message || "Invalid code", "error");
       setLoading(false);
     }
   };
@@ -121,8 +121,8 @@ export default function GatewayPage() {
       await authApi.requestEmailOtp(identifier);
       setStep("verify_otp");
       toast("Code sent to your email", "success");
-    } catch (error: any) {
-      toast(error.message || "Failed to send code", "error");
+    } catch (error: unknown) {
+      toast((error as Error).message || "Failed to send code", "error");
     } finally {
       setLoading(false);
     }
@@ -137,8 +137,8 @@ export default function GatewayPage() {
       setIsPasswordReset(true);
       setStep("verify_otp");
       toast("Verification code sent to your email", "success");
-    } catch (error: any) {
-      toast(error.message || "Could not send verification code", "error");
+    } catch (error: unknown) {
+      toast((error as Error).message || "Could not send verification code", "error");
     } finally {
       setLoading(false);
     }
@@ -148,8 +148,8 @@ export default function GatewayPage() {
     setLoading(true);
     try {
       await authApi.signInWithGoogle();
-    } catch (error: any) {
-      toast(error.message || "Google login failed", "error");
+    } catch (error: unknown) {
+      toast((error as Error).message || "Google login failed", "error");
       setLoading(false);
     }
   };

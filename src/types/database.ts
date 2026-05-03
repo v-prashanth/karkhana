@@ -35,6 +35,7 @@ export type InvoiceType = 'tax_invoice' | 'proforma' | 'credit_note';
 
 export type InvoiceStatus =
   | 'draft'
+  | 'pending_approval'
   | 'sent'
   | 'paid'
   | 'partial'
@@ -86,6 +87,11 @@ export interface Organization {
   plan_expires_at: string | null;
   total_revenue: number;
   total_outstanding: number;
+  tagline: string | null;
+  capabilities: string[];
+  year_established: number | null;
+  employee_count: string | null;
+  profile_complete: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -154,6 +160,7 @@ export interface Document {
   type: DocumentType;
   document_number: string;
   date: string;
+  status: string;
   reference_number: string | null;
   notes: string | null;
   pdf_url: string | null;

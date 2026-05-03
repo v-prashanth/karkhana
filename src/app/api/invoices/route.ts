@@ -6,10 +6,15 @@ function formatInvoiceNumber(prefix: string, counter: number, financialYear: str
 }
 
 export async function GET(request: Request) {
-  const { user, organizationId, supabase } = await getSecureServerSession();
+  const { user, organizationId, role, supabase } = await getSecureServerSession();
 
   if (!user || !organizationId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // RBAC Check
+  if (role !== "owner" && role !== "accountant") {
+    return NextResponse.json({ error: "Forbidden: Department access required." }, { status: 403 });
   }
 
   const { searchParams } = new URL(request.url);
@@ -39,10 +44,15 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const { user, organizationId, supabase } = await getSecureServerSession();
+  const { user, organizationId, role, supabase } = await getSecureServerSession();
 
   if (!user || !organizationId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // RBAC Check
+  if (role !== "owner" && role !== "accountant") {
+    return NextResponse.json({ error: "Forbidden: Only finance and admin users can issue invoices." }, { status: 403 });
   }
 
   const body = await request.json();
@@ -107,7 +117,7 @@ export async function POST(request: Request) {
       igst_amount: body.igst_amount ?? 0,
       total: body.total ?? 0,
       total_in_words: body.total_in_words || null,
-      status: body.status || "sent",
+      status: role === "owner" ? (body.status || "sent") : "pending_approval",
       amount_paid: body.amount_paid ?? 0,
       amount_due: body.amount_due ?? body.total ?? 0,
       notes: body.notes || null,

@@ -7,7 +7,7 @@ export const ordersApi = {
   async list(status?: string) {
     const params = new URLSearchParams();
     if (status) params.set("status", status);
-    const response = await fetch(`/api/orders?${params.toString()}`);
+    const response = await fetch(`/api/jobs?${params.toString()}`);
     const payload = await response.json();
     if (!response.ok) throw new Error(payload.error || "Failed to load orders");
     return payload as Order[];
@@ -24,7 +24,7 @@ export const ordersApi = {
   },
 
   async create(order: Omit<InsertOrder, 'organization_id'>) {
-    const response = await fetch("/api/orders", {
+    const response = await fetch("/api/jobs", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(order),

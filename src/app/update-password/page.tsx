@@ -33,9 +33,9 @@ export default function UpdatePasswordPage() {
 
       toast("Password updated successfully!", "success");
       // Since they are fully authenticated to do this, take them to the dashboard
-      router.push("/dashboard");
-    } catch (error: any) {
-      toast(error.message || "Could not update password", "error");
+      router.push("/home");
+    } catch (error: unknown) {
+      toast((error as Error).message || "Could not update password", "error");
     } finally {
       setLoading(false);
     }

@@ -54,3 +54,11 @@ export function generatePaymentReminderWhatsAppMessage(
 ): string {
   return `Hello ${clientName},\n\nThis is a gentle reminder regarding invoice ${invoiceNumber}. An amount of ${amountDueText} is currently due.\n\nYou can view the invoice and make the payment using this securely shared link: ${shareUrl}${upiLink}\n\nThank you!`;
 }
+
+export function generateDCWhatsAppMessage(
+  clientName: string,
+  dcNumber: string,
+  shareUrl: string
+): string {
+  return `Hello ${clientName},\n\nYour Delivery Challan (${dcNumber}) has been generated for the dispatched goods.\n\nYou can track and verify the items securely here: ${shareUrl}\n\nThank you for choosing us!`;
+}

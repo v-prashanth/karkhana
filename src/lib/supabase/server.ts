@@ -43,13 +43,51 @@ export async function getSecureServerSession() {
 
   const { data: profile } = await supabase
     .from("users")
-    .select("organization_id")
+    .select("organization_id, role")
     .eq("id", user.id)
     .single();
 
   return { 
     user, 
     organizationId: profile?.organization_id || null, 
+    role: profile?.role || null,
     supabase 
   };
 }
+
+// Helper: get authenticated user
+// Use in EVERY API route
+export const getAuthenticatedUser = async () => {
+  const supabase = createServerSupabaseClient();
+
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
+  if (error || !user) {
+    return { user: null, error: "Unauthorized" };
+  }
+
+  return { user, error: null };
+};
+
+// Helper: get org from session
+// NEVER trust orgId from request
+export const getOrganizationId = async (): Promise<string | null> => {
+  const supabase = createServerSupabaseClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return null;
+
+  const { data } = await supabase
+    .from("users")
+    .select("organization_id")
+    .eq("id", user.id)
+    .single();
+
+  return data?.organization_id ?? null;
+};

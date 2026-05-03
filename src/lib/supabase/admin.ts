@@ -1,11 +1,16 @@
-import { createClient } from "@supabase/supabase-js";
-import { getSupabaseAdminEnv } from "@/lib/supabase/env";
+// Admin client
+// ONLY for:
+// → Initial user creation
+// → Background jobs
+// → Server-side migrations
+// NEVER in user-facing API routes
 
-export function createAdminClient() {
-  const { url, serviceRoleKey } = getSupabaseAdminEnv();
-  return createClient(
-    url,
-    serviceRoleKey,
+import { createClient } from "@supabase/supabase-js";
+
+export const createAdminClient = () =>
+  createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
     {
       auth: {
         autoRefreshToken: false,
@@ -13,4 +18,3 @@ export function createAdminClient() {
       },
     }
   );
-}

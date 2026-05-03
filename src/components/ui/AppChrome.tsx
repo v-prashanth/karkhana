@@ -14,6 +14,10 @@ import {
   Settings,
   ShieldCheck,
   Users,
+  Package,
+  Truck,
+  Network,
+  Inbox
 } from "lucide-react";
 import { BottomNav } from "@/components/ui/BottomNav";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
@@ -25,20 +29,21 @@ interface AppChromeProps {
 }
 
 const primaryLinks = [
-  { href: "/dashboard", label: "Home", icon: LayoutDashboard },
-  { href: "/contacts", label: "Contacts", icon: Users },
-  { href: "/finance", label: "Money", icon: IndianRupee },
-  { href: "/staff", label: "Staff", icon: ShieldCheck },
+  { href: "/home", label: "Home", icon: LayoutDashboard, allowedRoles: ["owner", "accountant", "manager", "viewer"] },
+  { href: "/clients", label: "Contacts", icon: Users, allowedRoles: ["owner", "manager", "viewer"] },
+  { href: "/finance", label: "Money", icon: IndianRupee, allowedRoles: ["owner", "accountant", "viewer"] },
+  { href: "/staff", label: "Staff", icon: ShieldCheck, allowedRoles: ["owner", "manager", "accountant", "viewer"] },
 ];
 
 const secondaryLinks = [
-  { href: "/invoices/new", label: "New Bill", icon: FileText },
-  { href: "/expenses/new", label: "Log Expense", icon: Receipt },
-  { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/network", label: "Vendor Network", icon: Network, allowedRoles: ["owner", "accountant", "manager"] },
+  { href: "/invoices/new", label: "New Bill", icon: FileText, allowedRoles: ["owner", "accountant"] },
+  { href: "/expenses/new", label: "Log Expense", icon: Receipt, allowedRoles: ["owner", "accountant", "manager"] },
+  { href: "/settings", label: "Settings", icon: Settings, allowedRoles: ["owner", "accountant", "manager", "viewer"] },
 ];
 
 function isActivePath(pathname: string, href: string) {
-  if (href === "/dashboard") {
+  if (href === "/home") {
     return pathname === href;
   }
 
@@ -57,7 +62,21 @@ export function AppChrome({ children }: AppChromeProps) {
     return <>{children}</>;
   }
 
-  const homeHref = user?.role === "worker" ? "/employee" : "/dashboard";
+  const isManufacturing = organization?.business_type === "manufacturing";
+
+  const dynamicLinks = [...primaryLinks];
+  
+  if (isManufacturing) {
+    // Insert Jobs and DCs after Contacts (index 1)
+    dynamicLinks.splice(2, 0, 
+      { href: "/dc/inward", label: "Inward DC", icon: Package, allowedRoles: ["owner", "manager", "viewer"] },
+      { href: "/jobs", label: "Jobs", icon: Network, allowedRoles: ["owner", "manager", "viewer"] },
+      { href: "/dc/outward", label: "Outward DC", icon: Truck, allowedRoles: ["owner", "manager", "viewer"] },
+      { href: "/network/inbox", label: "PO Inbox", icon: Inbox, allowedRoles: ["owner", "manager"] }
+    );
+  }
+
+  const homeHref = user?.role === "worker" ? "/employee" : "/home";
 
   return (
     <div className="app-shell relative min-h-screen">
@@ -79,7 +98,9 @@ export function AppChrome({ children }: AppChromeProps) {
           </Link>
 
           <nav className="space-y-2">
-            {primaryLinks.map((link) => {
+            {dynamicLinks
+              .filter(link => !user || link.allowedRoles.includes(user.role))
+              .map((link) => {
               const Icon = link.icon;
               const active = isActivePath(pathname, link.href);
 
@@ -106,7 +127,9 @@ export function AppChrome({ children }: AppChromeProps) {
               Actions
             </p>
             <ThemeToggle />
-            {secondaryLinks.map((link) => {
+            {secondaryLinks
+              .filter(link => !user || link.allowedRoles.includes(user.role))
+              .map((link) => {
               const Icon = link.icon;
 
               return (

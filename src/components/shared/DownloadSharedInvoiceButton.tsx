@@ -4,7 +4,17 @@ import { useState } from "react";
 import { Download, Loader2 } from "lucide-react";
 import { generateInvoicePdf } from "@/lib/pdfGenerator";
 
-export function DownloadSharedInvoiceButton({ invoice }: { invoice: any }) {
+import { Organization, Contact, Invoice, InvoiceItem } from "@/types/database";
+
+interface SharedInvoiceProps {
+  invoice: Invoice & {
+    organization: Organization;
+    contact: Contact;
+    items: (InvoiceItem | any)[]; // Keeping any for items temporarily as they might be different in shared view
+  };
+}
+
+export function DownloadSharedInvoiceButton({ invoice }: SharedInvoiceProps) {
   const [loading, setLoading] = useState(false);
 
   const handleDownload = async () => {
@@ -15,7 +25,7 @@ export function DownloadSharedInvoiceButton({ invoice }: { invoice: any }) {
       const items = invoice.items || [];
 
       // Calculate totals
-      const subtotal = items.reduce((acc: number, item: any) => acc + (Number(item.quantity || 0) * Number(item.rate || 0)), 0);
+      const subtotal = items.reduce((acc: number, item) => acc + (Number(item.quantity || 0) * Number(item.rate || 0)), 0);
       const gstAmount = (invoice.cgst_amount || 0) + (invoice.sgst_amount || 0) + (invoice.igst_amount || 0);
       const isGstApplicable = gstAmount > 0;
       const total = invoice.total || (subtotal + gstAmount);
@@ -34,7 +44,7 @@ export function DownloadSharedInvoiceButton({ invoice }: { invoice: any }) {
         date: new Date(invoice.date).toLocaleDateString("en-GB"),
         clientName: contact?.name || "Client",
         clientReference: invoice.reference_number || "-",
-        items: items.map((item: any) => ({
+        items: items.map((item) => ({
           particulars: item.description || "Item",
           qty: Number(item.quantity || 0),
           rate: Number(item.rate || 0),
