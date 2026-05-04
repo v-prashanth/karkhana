@@ -4,6 +4,7 @@ import { securityLogger } from "@/lib/api/security/logger";
 import { isPasswordPwned } from "@/lib/api/security/pwned";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { createAdminClient } from "@/lib/supabase/admin";
 import DOMPurify from "isomorphic-dompurify";
 import validator from "validator";
 
@@ -48,7 +49,43 @@ export async function POST(request: Request) {
       }, { status: 400 });
     }
 
-    // 4. Call Supabase Auth to actually register
+    // 4. Call Supabase Admin to create the user and bypass Supabase's built-in mailer
+    const admin = createAdminClient();
+    const { data: adminData, error: createError } = await admin.auth.admin.createUser({
+      email: sanitizedEmail,
+      password,
+      email_confirm: true, // Auto-confirm to bypass Supabase verification email
+      user_metadata: {
+        full_name: sanitizedName,
+      },
+    });
+
+    if (createError) {
+      // Prevent enumeration
+      if (createError.message.toLowerCase().includes("already registered") || createError.message.toLowerCase().includes("already exists")) {
+        return NextResponse.json({ error: "This email is already registered." }, { status: 409 });
+      }
+      console.error("Supabase create user error:", createError);
+      return NextResponse.json({ error: "Registration failed" }, { status: 500 });
+    }
+
+    // 5. Send custom Welcome/Confirmation email via Nodemailer
+    try {
+      const { sendAuthEmail } = await import("@/lib/auth/mailer");
+      await sendAuthEmail({
+        to: sanitizedEmail,
+        subject: "Welcome to Karkhana",
+        heading: "Welcome to Karkhana!",
+        body: "Your account has been successfully created. You can now log in to your workspace and start managing your business.",
+        ctaLabel: "Go to Dashboard",
+        ctaUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/login`,
+      });
+    } catch (mailError) {
+      console.error("Failed to send welcome email:", mailError);
+      // We don't fail the registration if the email fails
+    }
+
+    // 6. Sign in the user to establish the session
     const cookieStore = cookies();
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -56,42 +93,36 @@ export async function POST(request: Request) {
       {
         cookies: {
           get(name: string) { return cookieStore.get(name)?.value; },
-          set() {},
-          remove() {},
+          set(name: string, value: string, options: any) {
+            cookieStore.set({ name, value, ...options });
+          },
+          remove(name: string, options: any) {
+            cookieStore.set({ name, value: '', ...options });
+          },
         },
       }
     );
 
-    const { data, error } = await supabase.auth.signUp({
+    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
       email: sanitizedEmail,
       password,
-      options: {
-        data: {
-          full_name: sanitizedName,
-        },
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/callback`,
-      }
     });
 
-    if (error) {
-      // Prevent enumeration
-      if (error.message.toLowerCase().includes("already registered")) {
-        return NextResponse.json({ error: "This email is already registered." }, { status: 409 });
-      }
-      return NextResponse.json({ error: "Registration failed" }, { status: 500 });
+    if (signInError) {
+      return NextResponse.json({ error: "Account created, but failed to log in automatically." }, { status: 500 });
     }
 
-    // 5. Log success
+    // 7. Log success
     await securityLogger.log({
-      userId: data.user?.id,
+      userId: signInData.user?.id,
       identifier: sanitizedEmail,
       eventType: "registration_success",
       ipAddress: ip,
       userAgent: request.headers.get("user-agent") || "unknown",
-      details: { status: "success" }
+      details: { status: "success", mailer: "nodemailer" }
     });
 
-    return NextResponse.json({ success: true, user: data.user, session: data.session });
+    return NextResponse.json({ success: true, user: signInData.user, session: signInData.session });
   } catch (error) {
     console.error("Registration Error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
