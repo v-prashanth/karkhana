@@ -49,25 +49,29 @@ export async function POST(request: Request) {
       }, { status: 400 });
     }
 
-    // 4. Call Supabase Admin to create the user and bypass Supabase's built-in mailer
+    // 4. Call Supabase Admin to create the user
+    console.log("Creating admin client...");
     const admin = createAdminClient();
+    console.log("Admin client created. Calling createUser for:", sanitizedEmail);
+
     const { data: adminData, error: createError } = await admin.auth.admin.createUser({
       email: sanitizedEmail,
       password,
-      email_confirm: true, // Auto-confirm to bypass Supabase verification email
+      email_confirm: true,
       user_metadata: {
         full_name: sanitizedName,
       },
     });
 
     if (createError) {
-      // Prevent enumeration
+      console.error("Supabase create user error:", createError);
       if (createError.message.toLowerCase().includes("already registered") || createError.message.toLowerCase().includes("already exists")) {
         return NextResponse.json({ error: "This email is already registered." }, { status: 409 });
       }
-      console.error("Supabase create user error:", createError);
-      return NextResponse.json({ error: "Registration failed" }, { status: 500 });
+      return NextResponse.json({ error: "Registration failed: " + createError.message }, { status: 500 });
     }
+
+    console.log("User created via admin. Sending welcome email...");
 
     // 5. Send custom Welcome/Confirmation email via Nodemailer
     try {
@@ -80,10 +84,12 @@ export async function POST(request: Request) {
         ctaLabel: "Go to Dashboard",
         ctaUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/login`,
       });
+      console.log("Welcome email sent.");
     } catch (mailError) {
       console.error("Failed to send welcome email:", mailError);
-      // We don't fail the registration if the email fails
     }
+
+    console.log("Signing in user...");
 
     // 6. Sign in the user to establish the session
     const cookieStore = cookies();
@@ -109,22 +115,30 @@ export async function POST(request: Request) {
     });
 
     if (signInError) {
+      console.error("SignIn after register error:", signInError);
       return NextResponse.json({ error: "Account created, but failed to log in automatically." }, { status: 500 });
     }
 
-    // 7. Log success
-    await securityLogger.log({
-      userId: signInData.user?.id,
-      identifier: sanitizedEmail,
-      eventType: "registration_success",
-      ipAddress: ip,
-      userAgent: request.headers.get("user-agent") || "unknown",
-      details: { status: "success", mailer: "nodemailer" }
-    });
+    console.log("SignIn successful, logging security event...");
 
+    // 7. Log success
+    try {
+      await securityLogger.log({
+        userId: signInData.user?.id,
+        identifier: sanitizedEmail,
+        eventType: "registration_success",
+        ipAddress: ip,
+        userAgent: request.headers.get("user-agent") || "unknown",
+        details: { status: "success", mailer: "nodemailer" }
+      });
+    } catch (e) {
+      console.error("Failed to log security event", e);
+    }
+
+    console.log("Registration complete. Returning success.");
     return NextResponse.json({ success: true, user: signInData.user, session: signInData.session });
-  } catch (error) {
-    console.error("Registration Error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  } catch (error: any) {
+    console.error("CRITICAL Registration Error (Exception thrown):", error);
+    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
   }
 }

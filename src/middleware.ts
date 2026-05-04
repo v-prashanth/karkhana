@@ -84,6 +84,7 @@ export async function middleware(request: NextRequest) {
   const isLoginPage = request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/register';
   const isAuthSupportPage =
     request.nextUrl.pathname.startsWith('/auth/callback') ||
+    request.nextUrl.pathname.startsWith('/forgot-password') ||
     request.nextUrl.pathname.startsWith('/auth/reset-password') ||
     request.nextUrl.pathname.startsWith('/update-password');
   const isPublicDoc = request.nextUrl.pathname.startsWith('/doc/') || request.nextUrl.pathname.startsWith('/share/');

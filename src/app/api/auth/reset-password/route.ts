@@ -56,6 +56,8 @@ export async function POST(request: Request) {
 
     // 3. Request Password Reset Link via Admin API
     const origin = request.headers.get("origin") || process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+    console.log("Generating link for:", sanitizedEmail, "with origin:", origin);
+
     const admin = createAdminClient();
     const { data, error } = await admin.auth.admin.generateLink({
       type: "recovery",
@@ -67,9 +69,12 @@ export async function POST(request: Request) {
 
     if (error || !data?.properties?.action_link) {
       console.error("Generate recovery link error:", error);
+      // We still return success: true to prevent enumeration
     } else {
+      console.log("Link generated successfully:", data.properties.action_link);
       // 4. Send via our custom branded mailer
       try {
+        console.log("Sending email via nodemailer...");
         await sendAuthEmail({
           to: sanitizedEmail,
           subject: "Reset your Karkhana password",
@@ -78,6 +83,7 @@ export async function POST(request: Request) {
           ctaLabel: "Reset Password",
           ctaUrl: data.properties.action_link,
         });
+        console.log("Email sent!");
       } catch (mailError) {
         console.error("Failed to send nodemailer reset password email:", mailError);
       }
