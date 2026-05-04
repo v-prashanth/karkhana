@@ -61,22 +61,29 @@ export async function GET() {
   // ═══════════════════════════════════════════════════════════════════
 
   // 4a. Create a new organization for this user
+  // India financial year starts April 1st
+  const now = new Date();
+  const financialYearStart = now.getMonth() >= 3
+    ? `${now.getFullYear()}-04-01`   // After April → this year April 1st
+    : `${now.getFullYear() - 1}-04-01`; // Before April → last year April 1st
+
   const { data: newOrg, error: orgError } = await admin
     .from("organizations")
     .insert({
       name: "My Business",
       address: "",
-      phone: authUser.phone || authUser.email || "",
-      invoice_prefix: "INV",
-      invoice_counter: 1,
+      phone: authUser.phone || `email-${authUser.id.slice(0, 8)}`,
+      financial_year_start: financialYearStart,
       dc_prefix: "DC",
       dc_counter: 1,
+      bill_prefix: "INV",
+      bill_counter: 1,
     })
     .select("id")
     .single();
 
   if (orgError || !newOrg) {
-    
+    console.error("Org provisioning error:", orgError?.message);
     return NextResponse.json(
       { error: "Provisioning failed", details: orgError?.message },
       { status: 500 }

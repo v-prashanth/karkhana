@@ -164,7 +164,8 @@ export default function LoginPage() {
                   </Button>
                 </form>
 
-                <div className="flex items-center justify-center mt-4 text-sm">
+                <div className="flex items-center justify-between mt-4 text-sm">
+                  <Link href="/forgot-password" className="text-white/60 hover:text-white transition-colors">Forgot password?</Link>
                   <p className="text-white/40">
                     Don't have an account?{" "}
                     <Link href="/register" className="text-white hover:underline font-medium ml-1">Create one</Link>
