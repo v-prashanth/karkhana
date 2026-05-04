@@ -21,7 +21,7 @@ import { useToast } from "@/components/ui/Toaster";
 import { useStore } from "@/store/useStore";
 
 export default function GatewayPage() {
-  const [step, setStep] = useState<"enter_identifier" | "login_password" | "verify_otp">("enter_identifier");
+  const [step, setStep] = useState<"enter_identifier" | "login_password" | "signup_password" | "verify_otp">("enter_identifier");
   const [isPasswordReset, setIsPasswordReset] = useState(false);
   
   const [identifier, setIdentifier] = useState("");
@@ -37,7 +37,6 @@ export default function GatewayPage() {
   const { toast } = useToast();
   const { user, authHydrated } = useStore();
 
-  // Auth guard: If user is already authenticated, send them to dashboard
   useEffect(() => {
     if (authHydrated && user) {
       router.replace("/home");
@@ -60,21 +59,11 @@ export default function GatewayPage() {
       const exists = await authApi.checkUserExists(identifier);
       setIsNewUser(!exists);
 
-      // For ALL users (new and existing), the primary flow is OTP.
-      // This fixes the bug where users created via magic link have no password,
-      // causing signInWithPassword() to always fail.
-      if (isEmail) {
-        await authApi.requestEmailOtp(identifier);
+      if (exists) {
+        setStep("login_password");
       } else {
-        await authApi.signInWithPhone(identifier);
+        setStep("signup_password");
       }
-      setStep("verify_otp");
-      toast(
-        exists
-          ? (isEmail ? "Login code sent to your email" : "Code sent to your mobile")
-          : (isEmail ? "Setup code sent to email" : "Setup code sent to mobile"),
-        "success"
-      );
     } catch (error: unknown) {
       toast((error as Error).message || "Could not verify details", "error");
     } finally {
@@ -86,11 +75,52 @@ export default function GatewayPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      await authApi.signInWithEmail(identifier, password);
-      // Let the middleware handle the secure routing to dashboard or onboarding!
+      await authApi.signInWithPassword(identifier, password);
       router.push("/home"); 
     } catch (error: unknown) {
       toast((error as Error).message || "Invalid password", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePasswordSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password.length < 8) {
+      toast("Password must be at least 8 characters", "error");
+      return;
+    }
+    setLoading(true);
+    try {
+      await authApi.signUpWithPassword(identifier, password);
+      if (!isEmail) {
+        // Phone signups send an SMS verify OTP automatically
+        setStep("verify_otp");
+        toast("Verification code sent to your mobile", "success");
+      } else {
+        // Assuming email auto-confirms or they are now logged in
+        toast("Account created successfully", "success");
+        router.push("/home");
+      }
+    } catch (error: unknown) {
+      toast((error as Error).message || "Could not create account", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRequestOtpInstead = async () => {
+    setLoading(true);
+    try {
+      if (isEmail) {
+        await authApi.requestEmailOtp(identifier);
+      } else {
+        await authApi.signInWithPhone(identifier);
+      }
+      setStep("verify_otp");
+      toast("Code sent to your device", "success");
+    } catch (error: unknown) {
+      toast((error as Error).message || "Failed to send code", "error");
     } finally {
       setLoading(false);
     }
@@ -106,8 +136,6 @@ export default function GatewayPage() {
         await authApi.verifyOtp(identifier, otp);
       }
       toast("Verified successfully", "success");
-      // If this was a password reset flow, go to /update-password.
-      // Otherwise, go to dashboard.
       router.push(isPasswordReset ? "/update-password" : "/home");
     } catch (error: unknown) {
       toast((error as Error).message || "Invalid code", "error");
@@ -115,24 +143,9 @@ export default function GatewayPage() {
     }
   };
 
-  const handleRequestEmailOtpInstead = async () => {
-    setLoading(true);
-    try {
-      await authApi.requestEmailOtp(identifier);
-      setStep("verify_otp");
-      toast("Code sent to your email", "success");
-    } catch (error: unknown) {
-      toast((error as Error).message || "Failed to send code", "error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleForgotPassword = async () => {
     setLoading(true);
     try {
-      // Send an OTP code instead of a link. After they verify, we redirect
-      // to /update-password. This bypasses the unreliable Supabase redirect chain.
       await authApi.requestEmailOtp(identifier);
       setIsPasswordReset(true);
       setStep("verify_otp");
@@ -191,7 +204,6 @@ export default function GatewayPage() {
       <div className="flex w-full flex-col justify-center items-center p-6 lg:w-[45%] lg:p-12 relative overflow-y-auto">
         <div className="w-full max-w-[380px] space-y-8">
           
-          {/* Mobile Logo Logo */}
           <div className="flex items-center gap-3 mb-12 lg:hidden">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-black">
               <ShieldCheck className="h-6 w-6" strokeWidth={2.5} />
@@ -242,9 +254,9 @@ export default function GatewayPage() {
               </motion.div>
             )}
 
-            {/* ── PASSWORD LOGIN STEP ── */}
+            {/* ── LOGIN PASSWORD STEP ── */}
             {step === "login_password" && (
-              <motion.div key="password" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-8">
+              <motion.div key="login_password" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-8">
                 <div>
                   <button onClick={() => { setStep("enter_identifier"); setPassword(""); }} className="flex items-center gap-2 text-xs text-white/50 hover:text-white transition-colors mb-6 font-medium uppercase tracking-widest">
                     <ChevronLeft className="h-4 w-4" /> Back
@@ -276,7 +288,7 @@ export default function GatewayPage() {
                       {loading ? <Loader2 className="h-5 w-5 animate-spin text-black" /> : "Sign In"}
                     </Button>
                     
-                    <Button type="button" onClick={handleRequestEmailOtpInstead} variant="outline" className="w-full h-12 rounded-lg border-white/10 bg-[transparent] text-sm font-medium text-white/90 hover:bg-white/[0.05] hover:text-white transition-all justify-center" disabled={loading}>
+                    <Button type="button" onClick={handleRequestOtpInstead} variant="outline" className="w-full h-12 rounded-lg border-white/10 bg-[transparent] text-sm font-medium text-white/90 hover:bg-white/[0.05] hover:text-white transition-all justify-center" disabled={loading}>
                       Sign in with Code Instead
                     </Button>
                   </div>
@@ -295,12 +307,57 @@ export default function GatewayPage() {
               </motion.div>
             )}
 
-            {/* ── OTP VERIFY STEP (For Login & Signup) ── */}
+            {/* ── SIGNUP PASSWORD STEP ── */}
+            {step === "signup_password" && (
+              <motion.div key="signup_password" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-8">
+                <div>
+                  <button onClick={() => { setStep("enter_identifier"); setPassword(""); }} className="flex items-center gap-2 text-xs text-white/50 hover:text-white transition-colors mb-6 font-medium uppercase tracking-widest">
+                    <ChevronLeft className="h-4 w-4" /> Back
+                  </button>
+                  <h2 className="text-3xl font-medium tracking-tight text-white/95">Create password</h2>
+                  <p className="mt-3 text-sm text-white/50 font-light max-w-[280px] break-all">
+                    Creating an account for {identifier}
+                  </p>
+                </div>
+                
+                <form onSubmit={handlePasswordSignup} className="space-y-5">
+                  <div className="relative">
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Minimum 8 characters"
+                      className="h-12 bg-white/[0.02] border-white/10 focus:border-white/30 focus:bg-white/[0.04] text-sm text-white placeholder:text-white/30 rounded-lg transition-all pr-12 font-light"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      autoFocus
+                    />
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors">
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  
+                  <div className="pt-2 space-y-3">
+                    <Button type="submit" className="w-full h-12 rounded-lg bg-white text-black text-sm font-medium hover:bg-white/90 transition-all font-bold" disabled={loading || password.length < 8}>
+                      {loading ? <Loader2 className="h-5 w-5 animate-spin text-black" /> : "Sign Up"}
+                    </Button>
+                    
+                    <Button type="button" onClick={handleRequestOtpInstead} variant="outline" className="w-full h-12 rounded-lg border-white/10 bg-[transparent] text-sm font-medium text-white/90 hover:bg-white/[0.05] hover:text-white transition-all justify-center" disabled={loading}>
+                      Sign up with Code Instead
+                    </Button>
+                  </div>
+                </form>
+              </motion.div>
+            )}
+
+            {/* ── OTP VERIFY STEP ── */}
             {step === "verify_otp" && (
               <motion.div key="otp" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-8">
                 <div>
+                  <button onClick={() => { setStep("enter_identifier"); setOtp(""); }} className="flex items-center gap-2 text-xs text-white/50 hover:text-white transition-colors mb-6 font-medium uppercase tracking-widest">
+                    <ChevronLeft className="h-4 w-4" /> Back
+                  </button>
                   <h2 className="text-3xl font-medium tracking-tight text-white/95">
-                    {isPasswordReset ? "Reset password" : isNewUser ? "Create account" : "Enter code"}
+                    {isPasswordReset ? "Reset password" : isNewUser ? "Verify account" : "Enter code"}
                   </h2>
                   <p className="text-sm text-white/50 mt-3 font-light max-w-[280px] break-all">
                     Code sent to {identifier}
@@ -321,23 +378,8 @@ export default function GatewayPage() {
                     />
                   </div>
                   <Button type="submit" className="w-full h-12 rounded-lg bg-white text-black text-sm font-medium hover:bg-white/90 transition-all font-bold" disabled={loading || otp.length < 6}>
-                    {loading ? <Loader2 className="h-5 w-5 animate-spin text-black" /> : isPasswordReset ? "Verify & Reset Password" : isNewUser ? "Verify & Continue" : "Verify & Sign In"}
+                    {loading ? <Loader2 className="h-5 w-5 animate-spin text-black" /> : isPasswordReset ? "Verify & Reset Password" : "Verify & Continue"}
                   </Button>
-                  <button type="button" onClick={() => { setOtp(""); setStep("enter_identifier"); }} className="w-full text-left text-sm text-white/50 hover:text-white transition-colors">
-                    Wait, let me change my {isEmail ? "email" : "number"}
-                  </button>
-                  {!isNewUser && isEmail && (
-                    <div className="pt-2 border-t border-white/10">
-                      <Button
-                        type="button"
-                        onClick={() => { setOtp(""); setStep("login_password"); }}
-                        variant="outline"
-                        className="w-full h-12 rounded-lg border-white/10 bg-[transparent] text-sm font-medium text-white/90 hover:bg-white/[0.05] hover:text-white transition-all justify-center"
-                      >
-                        Sign in with password instead
-                      </Button>
-                    </div>
-                  )}
                 </form>
               </motion.div>
             )}

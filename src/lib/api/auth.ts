@@ -103,29 +103,35 @@ export const authApi = {
     return data;
   },
 
-  // ─── EMAIL PASSWORD AUTH ────────────────────────────────────
+  // ─── PASSWORD AUTH (EMAIL & PHONE) ────────────────────────────────────
 
   /**
-   * Sign in with email + password → establishes session in browser
+   * Sign in with identifier (email or phone) + password
    */
-  async signInWithEmail(email: string, pass: string) {
+  async signInWithPassword(identifier: string, pass: string) {
     const supabase = createClient();
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password: pass,
-    });
+    const isEmail = identifier.includes("@");
+    const credentials = isEmail 
+      ? { email: identifier, password: pass } 
+      : { phone: identifier.startsWith("+91") ? identifier : `+91${identifier.replace(/\D/g, "")}`, password: pass };
+      
+    const { data, error } = await supabase.auth.signInWithPassword(credentials);
     if (error) throw error;
     return data;
   },
 
   /**
-   * Sign up with email + password
+   * Sign up with identifier (email or phone) + password
    */
-  async signUpWithEmail(email: string, pass: string) {
+  async signUpWithPassword(identifier: string, pass: string) {
     const supabase = createClient();
+    const isEmail = identifier.includes("@");
+    const credentials = isEmail 
+      ? { email: identifier, password: pass } 
+      : { phone: identifier.startsWith("+91") ? identifier : `+91${identifier.replace(/\D/g, "")}`, password: pass };
+      
     const { data, error } = await supabase.auth.signUp({
-      email,
-      password: pass,
+      ...credentials,
       options: {
         emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
