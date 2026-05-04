@@ -56,7 +56,13 @@ export function AppChrome({ children }: AppChromeProps) {
   const organization = useStore((state) => state.organization);
   
   const hideChrome =
-    pathname === "/" || pathname.startsWith("/onboarding") || pathname.startsWith("/employee");
+    pathname === "/" ||
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/register") ||
+    pathname.startsWith("/setup") ||
+    pathname.startsWith("/update-password") ||
+    pathname.startsWith("/onboarding") ||
+    pathname.startsWith("/employee");
 
   if (hideChrome) {
     return <>{children}</>;

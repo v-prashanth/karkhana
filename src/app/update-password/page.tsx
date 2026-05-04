@@ -45,8 +45,8 @@ export default function UpdatePasswordPage() {
     <main className="flex min-h-screen items-center justify-center bg-[#030303] p-6 text-white selection:bg-white/20">
       <div className="w-full max-w-sm space-y-8">
         <div className="flex flex-col items-center text-center space-y-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white text-black mb-2">
-            <ShieldCheck className="h-6 w-6" strokeWidth={2.5} />
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-black shadow-xl mb-4">
+            <ShieldCheck className="h-8 w-8" strokeWidth={2.5} />
           </div>
           <h1 className="text-3xl font-medium tracking-tight text-white/95">Set New Password</h1>
           <p className="text-sm font-light text-white/50">
@@ -60,7 +60,7 @@ export default function UpdatePasswordPage() {
             <Input
               type={showPassword ? "text" : "password"}
               placeholder="Your new password"
-              className="h-14 pl-12 bg-white/[0.02] border-white/10 focus:border-white/30 focus:bg-white/[0.04] text-lg font-light text-white rounded-lg transition-all pr-12"
+              className="h-14 pl-12 bg-white/[0.02] border-white/10 focus:border-white/30 focus:bg-white/[0.04] text-lg font-light text-white rounded-2xl transition-all pr-12"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -76,7 +76,7 @@ export default function UpdatePasswordPage() {
           </div>
           <Button 
             type="submit" 
-            className="w-full h-12 rounded-lg bg-white text-black text-sm font-medium hover:bg-white/90 transition-all" 
+            className="w-full h-14 rounded-2xl bg-white text-black text-sm font-bold hover:bg-white/90 transition-all" 
             disabled={loading}
           >
             {loading ? <Loader2 className="h-5 w-5 animate-spin text-black" /> : "Update Password"}
