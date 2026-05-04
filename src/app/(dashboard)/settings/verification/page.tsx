@@ -154,7 +154,7 @@ export default function VerificationPage() {
                     
                     <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/10 flex gap-4">
                        <Info className="h-5 w-5 text-amber-500 shrink-0" />
-                       <p className="text-[10px] font-bold text-amber-500/80 uppercase leading-relaxed">Verification usually takes 24-48 business hours. You'll be notified via SMS/WhatsApp.</p>
+                       <p className="text-[10px] font-bold text-amber-500/80 uppercase leading-relaxed">Verification usually takes 24-48 business hours. You&apos;ll be notified via SMS/WhatsApp.</p>
                     </div>
 
                     <div className="flex gap-4">
@@ -182,7 +182,7 @@ export default function VerificationPage() {
                </div>
                <div className="space-y-3">
                   <h3 className="text-4xl font-black text-white uppercase italic tracking-tighter">Details Submitted</h3>
-                  <p className="text-muted-foreground max-w-sm mx-auto">Your verification is in the queue. We'll update your status in 24-48 hours.</p>
+                  <p className="text-muted-foreground max-w-sm mx-auto">Your verification is in the queue. We&apos;ll update your status in 24-48 hours.</p>
                </div>
                <Button onClick={() => window.location.href = '/settings'} size="lg" className="h-14 px-10 rounded-2xl bg-white text-black font-black uppercase tracking-widest text-[10px] italic">
                   Return to Settings

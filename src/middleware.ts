@@ -72,23 +72,29 @@ export async function middleware(request: NextRequest) {
   const { data: { session } } = await supabase.auth.getSession();
 
   // Protected Routes Logic
-  const isGatewayPage = request.nextUrl.pathname === '/';
-  const isPublicDoc = request.nextUrl.pathname.startsWith('/doc/');
-  const isShareLink = request.nextUrl.pathname.startsWith('/share/');
-  const isPasswordReset = request.nextUrl.pathname === '/update-password';
-  const isPublicPage = request.nextUrl.pathname === '/privacy' || request.nextUrl.pathname === '/network-terms';
+  const isLandingPage = request.nextUrl.pathname === '/';
+  const isLoginPage = request.nextUrl.pathname.startsWith('/auth/login');
+  const isAuthSupportPage =
+    request.nextUrl.pathname.startsWith('/auth/callback') ||
+    request.nextUrl.pathname.startsWith('/auth/reset-password') ||
+    request.nextUrl.pathname.startsWith('/update-password');
+  const isPublicDoc = request.nextUrl.pathname.startsWith('/doc/') || request.nextUrl.pathname.startsWith('/share/');
+  const isPublicPage =
+    request.nextUrl.pathname.startsWith('/privacy') ||
+    request.nextUrl.pathname.startsWith('/integrity') ||
+    request.nextUrl.pathname.startsWith('/network-terms');
   const isStatic = request.nextUrl.pathname.startsWith('/_next') || 
                    request.nextUrl.pathname.startsWith('/api') ||
                    request.nextUrl.pathname.includes('.');
 
   // 1. If no session and trying to access protected route (and NOT public)
-  if (!session && !isGatewayPage && !isPublicDoc && !isShareLink && !isPasswordReset && !isPublicPage && !isStatic) {
-    return NextResponse.redirect(new URL('/', request.url));
+  if (!session && !isLandingPage && !isLoginPage && !isAuthSupportPage && !isPublicDoc && !isPublicPage && !isStatic) {
+    return NextResponse.redirect(new URL('/auth/login', request.url));
   }
 
-  // 2. If session exists and on gateway page, redirect to dashboard
-  if (session && isGatewayPage) {
-    return NextResponse.redirect(new URL('/home', request.url));
+  // 2. If session exists and on auth page, redirect to dashboard
+  if (session && isLoginPage) {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
   return response;
