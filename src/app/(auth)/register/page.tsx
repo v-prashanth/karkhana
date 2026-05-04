@@ -80,20 +80,11 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       await authApi.signUpWithPassword(sanitizedEmail, password);
-      // Let the user know they need to verify
-      toast("Account created. Please check your email to verify.", "success");
-      // Supabase signInWithPassword automatically logs them in if email confirmation is disabled,
-      // but if it's enabled, they stay unauthenticated until they click the link.
-      // We push to home, the middleware will decide if they are authenticated.
+      toast("Account created! Welcome to Karkhana.", "success");
       router.push("/home");
     } catch (error: any) {
-      // Don't show technical errors
-      const msg = error.message.toLowerCase();
-      if (msg.includes("already registered")) {
-        toast("This email is already registered. Log in instead?", "error");
-      } else {
-        toast("Could not create account", "error");
-      }
+      // Show the actual error message from the API
+      toast(error.message || "Could not create account", "error");
     } finally {
       setLoading(false);
     }
