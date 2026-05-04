@@ -1,7 +1,8 @@
 import { createHash } from "crypto";
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { otpVerifyLimiter } from "@/lib/rate-limit";
+import { rateLimit, LIMITS } from "@/lib/api/security/rate-limit";
+import { securityLogger } from "@/lib/api/security/logger";
 
 function hashCode(email: string, code: string) {
   return createHash("sha256").update(`${email}:${code}`).digest("hex");
@@ -15,17 +16,29 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Email and code are required" }, { status: 400 });
     }
 
-    // Rate limit: 10 verify attempts per email per 15 minutes
-    const { success } = otpVerifyLimiter.check(email.toLowerCase());
-    if (!success) {
+    const normalizedEmail = email.toLowerCase();
+    const ip = request.headers.get("x-forwarded-for") || "unknown";
+    const userAgent = request.headers.get("user-agent") || "unknown";
+
+    // Rate limit: 5 login attempts per 15 minutes using Upstash
+    const rateLimitKey = `otp_verify:${normalizedEmail}`;
+    const rl = await rateLimit(rateLimitKey, LIMITS.LOGIN_ATTEMPTS.limit, LIMITS.LOGIN_ATTEMPTS.window);
+    
+    if (!rl.success) {
+      await securityLogger.log({
+        identifier: normalizedEmail,
+        eventType: "account_locked",
+        ipAddress: ip,
+        userAgent,
+        details: { reason: "too_many_otp_attempts" }
+      });
       return NextResponse.json(
-        { error: "Too many attempts. Please wait before trying again." },
+        { error: "Too many attempts. Account locked for 15 minutes." },
         { status: 429 }
       );
     }
 
     const admin = createAdminClient();
-    const normalizedEmail = email.toLowerCase();
 
     // 1. Validate the custom OTP code against our email_auth_codes table
     const { data: authCode, error: codeError } = await admin
@@ -39,10 +52,24 @@ export async function POST(request: Request) {
       .maybeSingle();
 
     if (codeError || !authCode) {
+      await securityLogger.log({
+        identifier: normalizedEmail,
+        eventType: "login_failed",
+        ipAddress: ip,
+        userAgent,
+        details: { reason: "otp_expired_or_not_found" }
+      });
       return NextResponse.json({ error: "Code expired or not found" }, { status: 400 });
     }
 
     if (authCode.code_hash !== hashCode(normalizedEmail, code)) {
+      await securityLogger.log({
+        identifier: normalizedEmail,
+        eventType: "login_failed",
+        ipAddress: ip,
+        userAgent,
+        details: { reason: "invalid_otp" }
+      });
       return NextResponse.json({ error: "Invalid code" }, { status: 400 });
     }
 
@@ -53,8 +80,6 @@ export async function POST(request: Request) {
       .eq("id", authCode.id);
 
     // 3. Generate a magic link via Supabase Admin API
-    //    This gives us a hashed_token we can return to the CLIENT
-    //    so it can establish the session in-browser (no redirect needed)
     const { data, error } = await admin.auth.admin.generateLink({
       type: "magiclink",
       email: normalizedEmail,
@@ -67,10 +92,16 @@ export async function POST(request: Request) {
       );
     }
 
-    // 4. Return ONLY the hashed_token — the client will use
-    //    supabase.auth.verifyOtp({ token_hash, type: 'magiclink' })
-    //    to establish the session directly in browser cookies.
-    //    NO navigation to external URLs. NO hash fragments.
+    // 4. Log success
+    await securityLogger.log({
+      identifier: normalizedEmail,
+      eventType: "login_success",
+      ipAddress: ip,
+      userAgent,
+      details: { method: "email_otp" }
+    });
+
+    // Return the hashed_token
     return NextResponse.json({
       token_hash: data.properties.hashed_token,
     });

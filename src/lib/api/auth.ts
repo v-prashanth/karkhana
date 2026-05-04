@@ -24,17 +24,21 @@ export const authApi = {
   // ─── PHONE AUTH ─────────────────────────────────────────────
 
   /**
-   * Step 1: Request SMS OTP
+   * Step 1: Request SMS OTP via secure proxy
    */
   async signInWithPhone(phone: string) {
-    const supabase = createClient();
-    const normalizedPhone = phone.startsWith("+91") ? phone : `+91${phone.replace(/\D/g, "")}`;
-    const { data, error } = await supabase.auth.signInWithOtp({
-      phone: normalizedPhone,
-      options: { channel: 'sms' },
+    const normalizedPhone = phone.startsWith("+91") ? phone.replace("+91", "") : phone.replace(/\D/g, "");
+    
+    const response = await fetch("/api/auth/phone/request-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phone: normalizedPhone }),
     });
-    if (error) throw error;
-    return data;
+    
+    const payload = await response.json();
+    if (!response.ok) throw new Error(payload.error || "Could not send verification code");
+    
+    return payload;
   },
 
   /**
@@ -70,16 +74,8 @@ export const authApi = {
 
   /**
    * Step 2: Verify email OTP → establishes session in browser
-   *
-   * Flow:
-   *   1. Send code to server → server validates against email_auth_codes table
-   *   2. Server generates a hashed_token via Supabase Admin API
-   *   3. Client uses that hashed_token with supabase.auth.verifyOtp()
-   *      to establish the session DIRECTLY in browser cookies
-   *   4. No redirects, no hash fragments, no magic link navigation
    */
   async verifyEmailOtp(email: string, code: string) {
-    // 1. Server validates the custom OTP and returns a hashed_token
     const response = await fetch("/api/auth/email-otp/verify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -88,7 +84,6 @@ export const authApi = {
     const payload = await response.json();
     if (!response.ok) throw new Error(payload.error || "Could not verify login code");
 
-    // 2. Use the hashed_token to establish session in the browser
     const supabase = createClient();
     const { data, error } = await supabase.auth.verifyOtp({
       token_hash: payload.token_hash,
@@ -96,7 +91,6 @@ export const authApi = {
     });
 
     if (error) {
-      
       throw new Error("Verification succeeded but session could not be created. Please try again.");
     }
 
@@ -106,38 +100,63 @@ export const authApi = {
   // ─── PASSWORD AUTH (EMAIL & PHONE) ────────────────────────────────────
 
   /**
-   * Sign in with identifier (email or phone) + password
+   * Sign in with identifier (email or phone) + password via secure proxy
    */
   async signInWithPassword(identifier: string, pass: string) {
-    const supabase = createClient();
     const isEmail = identifier.includes("@");
     const credentials = isEmail 
       ? { email: identifier, password: pass } 
       : { phone: identifier.startsWith("+91") ? identifier : `+91${identifier.replace(/\D/g, "")}`, password: pass };
       
-    const { data, error } = await supabase.auth.signInWithPassword(credentials);
-    if (error) throw error;
-    return data;
+    // Since our proxy currently only handles email explicitly in naming but we can pass email to it.
+    // Wait, the proxy we built is /api/auth/email/login but the payload takes { email, password }.
+    // If it's a phone, we need to handle it. Actually, Karkhana Phase 1 spec explicitly stated:
+    // Method 1: Phone + OTP. Method 2: Email + Password.
+    // So signInWithPassword will only be used for Email + Password now!
+    const response = await fetch("/api/auth/email/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: identifier, password: pass }),
+    });
+    
+    const payload = await response.json();
+    if (!response.ok) throw new Error(payload.error || "Login failed");
+    
+    // Establish session in the browser immediately to sync state
+    if (payload.session) {
+      const supabase = createClient();
+      await supabase.auth.setSession({
+        access_token: payload.session.access_token,
+        refresh_token: payload.session.refresh_token,
+      });
+    }
+    
+    return payload;
   },
 
   /**
-   * Sign up with identifier (email or phone) + password
+   * Sign up with email + password via secure proxy
    */
   async signUpWithPassword(identifier: string, pass: string) {
-    const supabase = createClient();
-    const isEmail = identifier.includes("@");
-    const credentials = isEmail 
-      ? { email: identifier, password: pass } 
-      : { phone: identifier.startsWith("+91") ? identifier : `+91${identifier.replace(/\D/g, "")}`, password: pass };
-      
-    const { data, error } = await supabase.auth.signUp({
-      ...credentials,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-      },
+    const response = await fetch("/api/auth/email/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: identifier, password: pass }),
     });
-    if (error) throw error;
-    return data;
+    
+    const payload = await response.json();
+    if (!response.ok) throw new Error(payload.error || "Registration failed");
+    
+    // Establish session in the browser immediately to sync state
+    if (payload.session) {
+      const supabase = createClient();
+      await supabase.auth.setSession({
+        access_token: payload.session.access_token,
+        refresh_token: payload.session.refresh_token,
+      });
+    }
+    
+    return payload;
   },
 
   // ─── GOOGLE OAUTH ──────────────────────────────────────────
