@@ -21,7 +21,7 @@ export default function OutwardDCPage() {
     queryKey: ["outward-dcs", organization?.id],
     enabled: Boolean(organization?.id),
     queryFn: async () => {
-      const response = await fetch(`/api/outward-dc?organizationId=${organization!.id}`);
+      const response = await fetch(`/api/outward-dc`);
       if (!response.ok) throw new Error("Failed to load outward DCs");
       return response.json();
     },

@@ -21,7 +21,7 @@ export default function InwardDCPage() {
     queryKey: ["inward-dcs", organization?.id],
     enabled: Boolean(organization?.id),
     queryFn: async () => {
-      const response = await fetch(`/api/inward-dc?organizationId=${organization!.id}`);
+      const response = await fetch(`/api/inward-dc`);
       if (!response.ok) throw new Error("Failed to load inward DCs");
       return response.json();
     },
