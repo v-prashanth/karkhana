@@ -55,18 +55,6 @@ export function AppChrome({ children }: AppChromeProps) {
   const user = useStore((state) => state.user);
   const organization = useStore((state) => state.organization);
   
-  const hideChrome =
-    pathname === "/" ||
-    pathname.startsWith("/login") ||
-    pathname.startsWith("/register") ||
-    pathname.startsWith("/setup") ||
-    pathname.startsWith("/update-password") ||
-    pathname.startsWith("/onboarding") ||
-    pathname.startsWith("/employee");
-
-  if (hideChrome) {
-    return <>{children}</>;
-  }
 
   const isManufacturing = organization?.business_type === "manufacturing";
 

@@ -10,7 +10,7 @@ export default async function HomePage() {
   } = await supabase.auth.getSession();
 
   if (session) {
-    redirect("/dashboard");
+    redirect("/home");
   }
 
   return (
@@ -33,7 +33,7 @@ export default async function HomePage() {
 
           <div className="flex flex-col gap-3 sm:flex-row">
             <Link
-              href="/auth/login"
+              href="/login"
               className="inline-flex h-12 items-center justify-center rounded-2xl bg-accent px-6 text-[11px] font-black uppercase tracking-widest italic text-black"
             >
               Get started
@@ -41,7 +41,7 @@ export default async function HomePage() {
             </Link>
 
             <Link
-              href="/auth/login"
+              href="/login"
               className="inline-flex h-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.02] px-6 text-[11px] font-black uppercase tracking-widest italic text-white hover:bg-white/[0.04]"
             >
               Sign in

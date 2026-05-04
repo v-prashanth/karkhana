@@ -4,7 +4,6 @@ import { QueryProvider } from "@/components/providers/QueryProvider";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { ToastProvider } from "@/components/ui/Toaster";
-import { AppChrome } from "@/components/ui/AppChrome";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -48,7 +47,7 @@ export default function RootLayout({
           <QueryProvider>
             <AuthProvider>
               <ToastProvider>
-                <AppChrome>{children}</AppChrome>
+                {children}
               </ToastProvider>
             </AuthProvider>
           </QueryProvider>

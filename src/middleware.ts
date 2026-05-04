@@ -71,9 +71,17 @@ export async function middleware(request: NextRequest) {
   // Refresh session if expired - this is critical for token rotation security
   const { data: { session } } = await supabase.auth.getSession();
 
+  // Legacy Auth Redirects
+  if (request.nextUrl.pathname === '/auth/login') {
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
+  if (request.nextUrl.pathname === '/auth/register') {
+    return NextResponse.redirect(new URL('/register', request.url));
+  }
+
   // Protected Routes Logic
   const isLandingPage = request.nextUrl.pathname === '/';
-  const isLoginPage = request.nextUrl.pathname.startsWith('/auth/login');
+  const isLoginPage = request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/register';
   const isAuthSupportPage =
     request.nextUrl.pathname.startsWith('/auth/callback') ||
     request.nextUrl.pathname.startsWith('/auth/reset-password') ||
@@ -89,12 +97,12 @@ export async function middleware(request: NextRequest) {
 
   // 1. If no session and trying to access protected route (and NOT public)
   if (!session && !isLandingPage && !isLoginPage && !isAuthSupportPage && !isPublicDoc && !isPublicPage && !isStatic) {
-    return NextResponse.redirect(new URL('/auth/login', request.url));
+    return NextResponse.redirect(new URL('/login', request.url));
   }
 
   // 2. If session exists and on auth page, redirect to dashboard
   if (session && isLoginPage) {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
+    return NextResponse.redirect(new URL('/home', request.url));
   }
 
   return response;
