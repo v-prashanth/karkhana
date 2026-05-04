@@ -8,7 +8,7 @@ import { Copy, Download, ExternalLink, FileOutput, Link2, Plus, Share2, Trash2 }
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { generateInvoicePdf } from "@/lib/pdfGenerator";
+import { generateInvoicePdf } from "@/lib/utils/pdf";
 import { useStore } from "@/store/useStore";
 import { format } from "date-fns";
 import { contactsApi } from "@/lib/api/contacts";

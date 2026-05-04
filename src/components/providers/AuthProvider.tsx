@@ -23,7 +23,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(payload.user ?? null);
           setOrganization(payload.organization ?? null);
         } else {
-          console.error("PROFILE SYNC ERROR =>", payload);
+          
           // Clear stale local/demo state if the real session cannot be resolved.
           setUser(null);
           setOrganization(null);

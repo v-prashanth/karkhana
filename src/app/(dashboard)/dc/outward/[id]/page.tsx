@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { useStore } from "@/store/useStore";
 import { useToast } from "@/components/ui/Toaster";
-import { generateOutwardDCPdf } from "@/lib/pdfGenerator";
+import { generateOutwardDCPdf } from "@/lib/utils/pdf";
 import { generateWhatsAppLink, generateDCWhatsAppMessage } from "@/lib/utils/whatsapp";
 import type { Document, Contact } from "@/types/database";
 

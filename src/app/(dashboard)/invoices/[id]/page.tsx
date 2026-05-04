@@ -11,7 +11,7 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { invoicesApi } from "@/lib/api/invoices";
 import { contactsApi } from "@/lib/api/contacts";
-import { generateInvoicePdf } from "@/lib/pdfGenerator";
+import { generateInvoicePdf } from "@/lib/utils/pdf";
 import { useStore } from "@/store/useStore";
 import { useToast } from "@/components/ui/Toaster";
 import { formatCurrency } from "@/lib/utils/currency";

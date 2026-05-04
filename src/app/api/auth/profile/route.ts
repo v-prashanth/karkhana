@@ -76,7 +76,7 @@ export async function GET() {
     .single();
 
   if (orgError || !newOrg) {
-    console.error("Lazy-provision org failed:", orgError);
+    
     return NextResponse.json(
       { error: "Provisioning failed", details: orgError?.message },
       { status: 500 }
@@ -105,7 +105,7 @@ export async function GET() {
     .single();
 
   if (userError || !newUser) {
-    console.error("Lazy-provision user failed:", userError);
+    
     return NextResponse.json(
       { error: "User provisioning failed", details: userError?.message },
       { status: 500 }

@@ -55,7 +55,7 @@ export async function POST(
     .single();
 
   if (orderError || !order) {
-    console.error("Create Job Error:", orderError);
+    
     return NextResponse.json({ error: "Failed to create Job from PO" }, { status: 500 });
   }
 

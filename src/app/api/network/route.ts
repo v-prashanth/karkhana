@@ -14,7 +14,7 @@ export async function GET() {
   });
 
   if (payError) {
-    console.error("Network Payables Error:", payError);
+    
     return NextResponse.json({ error: "Failed to load network payables" }, { status: 500 });
   }
 
@@ -24,7 +24,7 @@ export async function GET() {
   });
 
   if (goodsError) {
-    console.error("Network Goods Error:", goodsError);
+    
     return NextResponse.json({ error: "Failed to load network goods" }, { status: 500 });
   }
 

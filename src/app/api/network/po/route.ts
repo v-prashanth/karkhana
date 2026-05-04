@@ -18,7 +18,7 @@ export async function GET(request: Request) {
       p_org_id: organizationId,
     });
     if (error) {
-      console.error("Buyer POs Error:", error);
+      
       return NextResponse.json({ error: "Failed to load issued POs" }, { status: 500 });
     }
     return NextResponse.json(data || []);
@@ -29,7 +29,7 @@ export async function GET(request: Request) {
     p_org_id: organizationId,
   });
   if (error) {
-    console.error("Supplier PO Inbox Error:", error);
+    
     return NextResponse.json({ error: "Failed to load PO inbox" }, { status: 500 });
   }
   return NextResponse.json(data || []);
@@ -72,7 +72,7 @@ export async function POST(request: Request) {
     .single();
 
   if (error) {
-    console.error("Create PO Error:", error);
+    
     return NextResponse.json({ error: error.message }, { status: 400 });
   }
 

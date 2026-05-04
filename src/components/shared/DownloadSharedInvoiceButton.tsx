@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Download, Loader2 } from "lucide-react";
-import { generateInvoicePdf } from "@/lib/pdfGenerator";
+import { generateInvoicePdf } from "@/lib/utils/pdf";
 
 import { Organization, Contact, Invoice, InvoiceItem } from "@/types/database";
 
@@ -60,7 +60,7 @@ export function DownloadSharedInvoiceButton({ invoice }: SharedInvoiceProps) {
 
       doc.save(`Invoice_${invoice.invoice_number}.pdf`);
     } catch (error) {
-      console.error("Error generating PDF", error);
+      
     } finally {
       setLoading(false);
     }

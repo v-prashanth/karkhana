@@ -47,7 +47,7 @@ export async function POST(request: Request) {
     .single();
 
   if (orgError || !organization) {
-    console.error("Org Creation Error:", orgError);
+    
     return NextResponse.json({ error: orgError?.message ?? "Failed to create organization" }, { status: 400 });
   }
 
@@ -66,7 +66,7 @@ export async function POST(request: Request) {
   );
 
   if (profileError) {
-    console.error("Profile Creation Error:", profileError);
+    
     // Cleanup if possible, or just report error
     return NextResponse.json({ error: profileError.message }, { status: 400 });
   }

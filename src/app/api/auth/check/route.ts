@@ -36,7 +36,7 @@ export async function POST(request: Request) {
       .maybeSingle();
 
     if (error) {
-      console.error("User check error:", error);
+      
       return NextResponse.json({ exists: false });
     }
 

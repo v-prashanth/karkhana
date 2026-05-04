@@ -96,7 +96,7 @@ export const authApi = {
     });
 
     if (error) {
-      console.error("Session establishment failed:", error);
+      
       throw new Error("Verification succeeded but session could not be created. Please try again.");
     }
 
