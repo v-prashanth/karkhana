@@ -11,7 +11,7 @@ import { useToast } from "@/components/ui/Toaster";
 import { authApi } from "@/lib/api/auth";
 
 import { AuthBrandingPanel } from "@/components/auth/AuthBrandingPanel";
-import DOMPurify from "isomorphic-dompurify";
+
 import validator from "validator";
 
 export default function ForgotPasswordPage() {
@@ -24,7 +24,7 @@ export default function ForgotPasswordPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const sanitizedEmail = DOMPurify.sanitize(email).trim().toLowerCase();
+    const sanitizedEmail = email.replace(/<[^>]*>/g, "").trim().toLowerCase();
     if (!validator.isEmail(sanitizedEmail)) {
       toast("Please enter a valid email address", "error");
       return;

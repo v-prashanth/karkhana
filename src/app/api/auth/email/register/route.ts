@@ -5,7 +5,7 @@ import { isPasswordPwned } from "@/lib/api/security/pwned";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/admin";
-import DOMPurify from "isomorphic-dompurify";
+function sanitize(str: string) { return str.replace(/<[^>]*>/g, "").trim(); }
 import validator from "validator";
 
 export async function POST(request: Request) {
@@ -14,8 +14,8 @@ export async function POST(request: Request) {
     const { email, password, name } = body;
 
     // 1. Sanitize & Validate
-    const sanitizedEmail = DOMPurify.sanitize(email || "").trim().toLowerCase();
-    const sanitizedName = DOMPurify.sanitize(name || "").trim();
+    const sanitizedEmail = sanitize(email || "").toLowerCase();
+    const sanitizedName = sanitize(name || "");
 
     if (!validator.isEmail(sanitizedEmail)) {
       return NextResponse.json({ error: "Invalid email format" }, { status: 400 });

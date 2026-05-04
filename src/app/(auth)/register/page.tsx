@@ -15,7 +15,7 @@ import { useStore } from "@/store/useStore";
 
 import { AuthBrandingPanel } from "@/components/auth/AuthBrandingPanel";
 import { PasswordStrengthIndicator } from "@/components/auth/PasswordStrengthIndicator";
-import DOMPurify from "isomorphic-dompurify";
+
 import validator from "validator";
 
 export default function RegisterPage() {
@@ -41,7 +41,7 @@ export default function RegisterPage() {
     e.preventDefault();
     
     // Client-side validation
-    const sanitizedEmail = DOMPurify.sanitize(email).trim().toLowerCase();
+    const sanitizedEmail = email.replace(/<[^>]*>/g, "").trim().toLowerCase();
     if (!validator.isEmail(sanitizedEmail)) {
       toast("Please enter a valid email address", "error");
       return;

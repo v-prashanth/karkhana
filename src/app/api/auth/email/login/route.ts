@@ -3,7 +3,7 @@ import { rateLimit, LIMITS } from "@/lib/api/security/rate-limit";
 import { securityLogger } from "@/lib/api/security/logger";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import DOMPurify from "isomorphic-dompurify";
+function sanitize(str: string) { return str.replace(/<[^>]*>/g, "").trim(); }
 import validator from "validator";
 
 // Fallback to anon key if service key is missing
@@ -14,7 +14,7 @@ export async function POST(request: Request) {
   try {
     const { email, password } = await request.json();
 
-    const sanitizedEmail = DOMPurify.sanitize(email || "").trim().toLowerCase();
+    const sanitizedEmail = sanitize(email || "").toLowerCase();
     if (!validator.isEmail(sanitizedEmail) || !password) {
       return NextResponse.json({ error: "Invalid credentials" }, { status: 400 });
     }

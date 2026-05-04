@@ -15,7 +15,7 @@ import { useStore } from "@/store/useStore";
 
 import { AuthBrandingPanel } from "@/components/auth/AuthBrandingPanel";
 import { OTPInput } from "@/components/auth/OTPInput";
-import DOMPurify from "isomorphic-dompurify";
+
 import validator from "validator";
 
 type AuthMethod = "otp" | "password";
@@ -54,7 +54,7 @@ export default function LoginPage() {
   const handleOtpRequestSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const sanitizedEmail = DOMPurify.sanitize(email).trim().toLowerCase();
+    const sanitizedEmail = email.replace(/<[^>]*>/g, "").trim().toLowerCase();
     if (!validator.isEmail(sanitizedEmail)) {
       toast("Please enter a valid email address", "error");
       return;
@@ -76,7 +76,7 @@ export default function LoginPage() {
   const handleOTPComplete = async (otp: string) => {
     setLoading(true);
     try {
-      const sanitizedEmail = DOMPurify.sanitize(email).trim().toLowerCase();
+      const sanitizedEmail = email.replace(/<[^>]*>/g, "").trim().toLowerCase();
       await authApi.verifyEmailOtp(sanitizedEmail, otp);
       toast("Verified successfully", "success");
       router.push("/home");
@@ -89,7 +89,7 @@ export default function LoginPage() {
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const sanitizedEmail = DOMPurify.sanitize(email).trim().toLowerCase();
+    const sanitizedEmail = email.replace(/<[^>]*>/g, "").trim().toLowerCase();
     if (!validator.isEmail(sanitizedEmail)) {
       toast("Please enter a valid email address", "error");
       return;
@@ -163,6 +163,13 @@ export default function LoginPage() {
                     {loading ? <Loader2 className="h-5 w-5 animate-spin text-black" /> : "Send Login Code"}
                   </Button>
                 </form>
+
+                <div className="flex items-center justify-center mt-4 text-sm">
+                  <p className="text-white/40">
+                    Don't have an account?{" "}
+                    <Link href="/register" className="text-white hover:underline font-medium ml-1">Create one</Link>
+                  </p>
+                </div>
 
                 <div className="relative py-2">
                   <div className="absolute inset-0 flex items-center">
