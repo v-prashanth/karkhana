@@ -89,7 +89,6 @@ export default function BusinessProfilePage() {
             className="h-28 w-28 rounded-[40px] glass flex items-center justify-center shadow-[0_0_50px_rgba(255,107,43,0.15)] border-white/10 shrink-0 relative group"
           >
             {org.logo_url ? (
-               /* @ts-expect-error: next/image unoptimized required for dynamic supabase urls */
               <Image src={org.logo_url} alt={org.name} width={80} height={80} className="h-20 w-20 object-contain unoptimized" />
             ) : (
               <Building2 className="h-12 w-12 text-accent" />
