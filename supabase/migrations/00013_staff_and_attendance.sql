@@ -1,6 +1,14 @@
 -- Migration 00013: Staff & Attendance tables
 -- These tables power the /staff and /attendance API routes.
 
+-- Ensure the RLS helper function exists (defined in 00000 but may not be applied)
+CREATE OR REPLACE FUNCTION public.get_current_org_id()
+RETURNS uuid
+LANGUAGE sql STABLE
+AS $$
+  SELECT organization_id FROM public.users WHERE id = auth.uid();
+$$;
+
 -- 1. STAFF MEMBERS
 CREATE TABLE IF NOT EXISTS public.staff (
   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
