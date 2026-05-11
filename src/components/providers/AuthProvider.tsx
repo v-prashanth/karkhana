@@ -53,12 +53,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-         setAuthHydrated(false);
          // Give the browser time to persist session cookies before the
          // server-side /api/auth/profile reads them from the request headers.
+         // NOTE: We no longer set authHydrated=false here to avoid the
+         // skeleton flash on protected pages during registration redirect.
          setTimeout(() => {
            syncProfile();
-         }, 500);
+         }, 150);
       } else if (event === 'SIGNED_OUT') {
          setUser(null);
          setOrganization(null);

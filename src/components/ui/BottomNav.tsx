@@ -112,15 +112,18 @@ export function BottomNav() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
               onClick={() => setIsMenuOpen(false)}
               className="fixed inset-0 z-[45] bg-black/60 backdrop-blur-sm xl:hidden"
+              style={{ willChange: 'opacity' }}
             />
             <motion.div
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              transition={{ type: "tween", duration: 0.2, ease: [0.32, 0.72, 0, 1] }}
               className="fixed bottom-0 left-0 right-0 z-[50] rounded-t-[32px] bg-[#0a0a0a] border-t border-white/10 pb-safe shadow-[0_-20px_40px_rgba(0,0,0,0.5)] xl:hidden flex flex-col max-h-[85vh]"
+              style={{ willChange: 'transform' }}
             >
               <div className="sticky top-0 z-10 flex items-center justify-between border-b border-white/5 bg-[#0a0a0a]/90 backdrop-blur-md px-6 py-5">
                 <h2 className="text-sm font-black uppercase tracking-widest text-[#666]">More Options</h2>

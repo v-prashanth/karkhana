@@ -8,12 +8,21 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { data, error } = await supabase
+  const url = new URL(request.url);
+  const showAll = url.searchParams.get("all") === "true";
+
+  let query = supabase
     .from("staff")
     .select("*")
     .eq("organization_id", organizationId)
-    .eq("is_active", true)
+    .order("is_active", { ascending: false })
     .order("joined_at", { ascending: false });
+
+  if (!showAll) {
+    query = query.eq("is_active", true);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 400 });

@@ -45,7 +45,12 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!authHydrated) {
-      return;
+      // Safety net: if auth doesn't hydrate within 5s, force mount
+      // This prevents infinite skeleton on slow networks or edge cases
+      const timeout = setTimeout(() => {
+        setMounted(true);
+      }, 5000);
+      return () => clearTimeout(timeout);
     }
 
     if (!user) {

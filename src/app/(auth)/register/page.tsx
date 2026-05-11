@@ -28,6 +28,7 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   
   const [loading, setLoading] = useState(false);
+  const [registered, setRegistered] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -81,7 +82,9 @@ export default function RegisterPage() {
     try {
       await authApi.signUpWithPassword(sanitizedEmail, password);
       toast("Account created! Welcome to Karkhana.", "success");
-      router.push("/home");
+      // Show success state — AuthProvider's onAuthStateChange will
+      // hydrate the session and the useEffect above will redirect to /home
+      setRegistered(true);
     } catch (error: any) {
       // Show the actual error message from the API
       toast(error.message || "Could not create account", "error");
@@ -99,6 +102,27 @@ export default function RegisterPage() {
       setLoading(false);
     }
   };
+
+  // Show a polished success screen while AuthProvider hydrates
+  if (registered) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-[#030303] text-white">
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.25 }}
+          className="flex flex-col items-center gap-4 text-center"
+        >
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-green-500/10">
+            <ShieldCheck className="h-8 w-8 text-green-400" />
+          </div>
+          <h2 className="text-2xl font-bold tracking-tight">Account Created!</h2>
+          <p className="text-sm text-white/50">Setting up your workspace…</p>
+          <Loader2 className="h-5 w-5 animate-spin text-white/30" />
+        </motion.div>
+      </main>
+    );
+  }
 
   return (
     <main className="flex min-h-screen bg-[#030303] text-white selection:bg-accent/30 lg:grid lg:grid-cols-2">

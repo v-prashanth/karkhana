@@ -9,8 +9,9 @@ async function parseResponse<T>(response: Response) {
 }
 
 export const staffApi = {
-  async list() {
-    const response = await fetch("/api/staff");
+  async list(showAll = false) {
+    const params = showAll ? "?all=true" : "";
+    const response = await fetch(`/api/staff${params}`);
     return parseResponse<Staff[]>(response);
   },
 
@@ -21,6 +22,22 @@ export const staffApi = {
       body: JSON.stringify(staff),
     });
     return parseResponse<Staff>(response);
+  },
+
+  async update(id: string, data: Partial<Pick<Staff, "name" | "phone" | "role" | "pay_type" | "pay_rate" | "is_active" | "joined_at">>) {
+    const response = await fetch(`/api/staff/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    return parseResponse<Staff>(response);
+  },
+
+  async remove(id: string) {
+    const response = await fetch(`/api/staff/${id}`, {
+      method: "DELETE",
+    });
+    return parseResponse<{ deleted?: boolean; deactivated?: boolean; message?: string }>(response);
   },
 
   async listAttendance(staffId?: string) {
@@ -45,4 +62,3 @@ export const staffApi = {
     return parseResponse<Attendance>(response);
   },
 };
-

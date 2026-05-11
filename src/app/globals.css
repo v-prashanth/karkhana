@@ -60,6 +60,8 @@
 @layer base {
   * {
     @apply border-border;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
   body {
     @apply bg-background text-foreground antialiased selection:bg-accent/30 tracking-tight;
