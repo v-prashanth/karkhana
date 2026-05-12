@@ -5,7 +5,6 @@ import { createAdminClient } from "@/lib/supabase/admin";
 export async function GET() {
   const supabase = createServerSupabaseClient();
 
-  // 1. Authenticate via cookie-based session (RLS-scoped)
   const {
     data: { user: authUser },
     error: authError,
@@ -15,12 +14,6 @@ export async function GET() {
     return NextResponse.json({ user: null, organization: null });
   }
 
-  // 2. Try to fetch the profile using the authenticated (RLS-scoped) client first.
-  //    This works for all existing users because RLS policy on "users" allows
-  //    SELECT WHERE id = auth.uid().
-  //    NOTE: We use admin client here because the RLS helper function get_current_org_id()
-  //    queries the users table itself, creating a chicken-and-egg problem for new users.
-  //    This is acceptable because we verify auth.uid() above — we know who they are.
   const admin = createAdminClient();
 
   const { data: profile, error: profileError } = await admin
@@ -33,7 +26,6 @@ export async function GET() {
     return NextResponse.json({ error: profileError.message }, { status: 400 });
   }
 
-  // 3. If profile exists, return it immediately (happy path for 99% of requests)
   if (profile) {
     return NextResponse.json({
       user: {
@@ -54,18 +46,10 @@ export async function GET() {
     });
   }
 
-  // ═══════════════════════════════════════════════════════════════════
-  // LAZY PROFILE PROVISIONING (runs ONCE per user, on first login)
-  // Admin client is required here for INSERT operations.
-  // This is idempotent — safe to retry on race conditions.
-  // ═══════════════════════════════════════════════════════════════════
-
-  // 4a. Create a new organization for this user
-  // India financial year starts April 1st
   const now = new Date();
   const financialYearStart = now.getMonth() >= 3
-    ? `${now.getFullYear()}-04-01`   // After April → this year April 1st
-    : `${now.getFullYear() - 1}-04-01`; // Before April → last year April 1st
+    ? `${now.getFullYear()}-04-01`
+    : `${now.getFullYear() - 1}-04-01`;
 
   const { data: newOrg, error: orgError } = await admin
     .from("organizations")
@@ -83,24 +67,19 @@ export async function GET() {
     .single();
 
   if (orgError || !newOrg) {
-    console.error("Org provisioning error:", orgError?.message);
     return NextResponse.json(
       { error: "Provisioning failed", details: orgError?.message },
       { status: 500 }
     );
   }
 
-  // 4b. Create the user row (upsert handles race conditions)
   const { data: newUser, error: userError } = await admin
     .from("users")
     .upsert(
       {
         id: authUser.id,
         organization_id: newOrg.id,
-        name:
-          authUser.user_metadata?.name ||
-          authUser.email?.split("@")[0] ||
-          "New User",
+        name: authUser.user_metadata?.name || authUser.email?.split("@")[0] || "New User",
         phone: authUser.phone || `unverified-${authUser.id}`,
         email: authUser.email || null,
         role: "owner",
@@ -112,7 +91,6 @@ export async function GET() {
     .single();
 
   if (userError || !newUser) {
-    
     return NextResponse.json(
       { error: "User provisioning failed", details: userError?.message },
       { status: 500 }
@@ -136,4 +114,36 @@ export async function GET() {
       ? newUser.organization[0] || null
       : newUser.organization || null,
   });
+}
+
+export async function PATCH(req: Request) {
+  const supabase = createServerSupabaseClient();
+  const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+
+  if (authError || !authUser) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const updates = await req.json();
+    const admin = createAdminClient();
+
+    const { data: updatedUser, error } = await admin
+      .from("users")
+      .update({
+        name: updates.name,
+        phone: updates.phone,
+        email: updates.email,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", authUser.id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return NextResponse.json(updatedUser);
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
 }
