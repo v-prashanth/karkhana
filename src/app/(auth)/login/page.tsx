@@ -34,7 +34,7 @@ export default function LoginPage() {
   
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  
+  const [otpValue, setOtpValue] = useState("");
   const [countdown, setCountdown] = useState(0);
 
   useEffect(() => {
@@ -202,9 +202,18 @@ export default function LoginPage() {
                 </div>
 
                 <div className="space-y-6">
-                  <OTPInput onComplete={handleOTPComplete} disabled={loading} />
+                  <OTPInput onComplete={(otp) => { setOtpValue(otp); handleOTPComplete(otp); }} disabled={loading} />
 
-                  <div className="flex flex-col gap-4 mt-6">
+                  <Button
+                    type="button"
+                    onClick={() => { if (otpValue.length === 6) handleOTPComplete(otpValue); }}
+                    className="w-full h-14 rounded-xl bg-white text-black text-sm font-bold hover:bg-white/90 transition-all"
+                    disabled={loading || otpValue.length < 6}
+                  >
+                    {loading ? <Loader2 className="h-5 w-5 animate-spin text-black" /> : "Verify & Log In"}
+                  </Button>
+
+                  <div className="flex flex-col gap-4 mt-2">
                     <button
                       onClick={handleOtpRequestSubmit}
                       disabled={countdown > 0 || loading}
@@ -213,12 +222,34 @@ export default function LoginPage() {
                       {countdown > 0 ? `Resend code (${countdown}s)` : "Resend code"}
                     </button>
                     <button
-                      onClick={() => { setStep("input"); }}
+                      onClick={() => { setStep("input"); setOtpValue(""); }}
                       disabled={loading}
                       className="text-sm font-medium text-white/60 hover:text-white transition-colors flex items-center justify-center gap-1"
                     >
                       <ChevronLeft className="h-4 w-4" /> Change email
                     </button>
+                  </div>
+
+                  <div className="relative py-2">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-[#1E1E1E]"></div>
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-[#030303] px-4 text-white/30 tracking-widest">or</span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <Button onClick={() => { setMethod("password"); setStep("input"); setOtpValue(""); }} variant="outline" className="w-full h-14 rounded-xl border-[#1E1E1E] bg-transparent text-sm font-medium text-white/80 hover:bg-[#111111] hover:text-white transition-all justify-center" disabled={loading}>
+                      Use password instead
+                    </Button>
+                  </div>
+
+                  <div className="text-center text-sm">
+                    <p className="text-white/40">
+                      Don&apos;t have an account?{" "}
+                      <Link href="/register" className="text-white hover:underline font-medium ml-1">Sign up</Link>
+                    </p>
                   </div>
                 </div>
               </motion.div>
