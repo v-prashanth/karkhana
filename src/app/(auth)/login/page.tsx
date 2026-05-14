@@ -80,6 +80,7 @@ export default function LoginPage() {
       await authApi.verifyEmailOtp(sanitizedEmail, otp);
       toast("Verified successfully", "success");
       router.push("/home");
+      // Intentionally not setting loading to false here to avoid double-clicks during navigation
     } catch (error: any) {
       toast(error.message || "Invalid or expired code", "error");
       setLoading(false); 
@@ -103,9 +104,9 @@ export default function LoginPage() {
     try {
       await authApi.signInWithPassword(sanitizedEmail, password);
       router.push("/home");
+      // Intentionally not setting loading to false here to avoid double-clicks during navigation
     } catch (error: any) {
       toast("Incorrect email or password", "error");
-    } finally {
       setLoading(false);
     }
   };

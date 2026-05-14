@@ -55,6 +55,7 @@ export async function GET() {
     .from("organizations")
     .insert({
       name: "My Business",
+      owner_name: authUser.user_metadata?.name || authUser.user_metadata?.full_name || authUser.email?.split("@")[0] || "New User",
       address: "",
       phone: authUser.phone || `email-${authUser.id.slice(0, 8)}`,
       financial_year_start: financialYearStart,
@@ -67,6 +68,7 @@ export async function GET() {
     .single();
 
   if (orgError || !newOrg) {
+    console.error("Organization provisioning failed:", orgError);
     return NextResponse.json(
       { error: "Provisioning failed", details: orgError?.message },
       { status: 500 }
@@ -79,7 +81,7 @@ export async function GET() {
       {
         id: authUser.id,
         organization_id: newOrg.id,
-        name: authUser.user_metadata?.name || authUser.email?.split("@")[0] || "New User",
+        name: authUser.user_metadata?.name || authUser.user_metadata?.full_name || authUser.email?.split("@")[0] || "New User",
         phone: authUser.phone || `unverified-${authUser.id}`,
         email: authUser.email || null,
         role: "owner",
@@ -91,6 +93,7 @@ export async function GET() {
     .single();
 
   if (userError || !newUser) {
+    console.error("User provisioning failed:", userError);
     return NextResponse.json(
       { error: "User provisioning failed", details: userError?.message },
       { status: 500 }
