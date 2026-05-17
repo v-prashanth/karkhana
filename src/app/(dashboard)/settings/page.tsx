@@ -40,6 +40,7 @@ export default function SettingsPage() {
   const { organization, logout, setOrganization, user } = useStore();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<Tab>("general");
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const [form, setForm] = useState({
     name: "", owner_name: "", address: "", phone: "", email: "",
     gstin: "", logo_url: "", tagline: "",
@@ -243,8 +244,42 @@ export default function SettingsPage() {
               icon={ImageIcon} title="Document Details"
               description="Additional details that appear on your generated documents."
             >
-              <FieldGroup label="Logo URL">
-                <Input value={form.logo_url} onChange={(e) => set("logo_url", e.target.value)} placeholder="https://your-logo-url.com/logo.png" />
+              <FieldGroup label="Business Logo">
+                <div className="flex items-center gap-4">
+                  {form.logo_url && (
+                    <img src={form.logo_url} alt="Logo" className="h-12 w-12 rounded-xl object-cover bg-white" />
+                  )}
+                  <div className="flex-1">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file || !organization?.id) return;
+                        try {
+                          setIsUploadingLogo(true);
+                          const formData = new FormData();
+                          formData.append("file", file);
+                          formData.append("orgId", organization.id);
+                          
+                          const res = await fetch("/api/upload/logo", { method: "POST", body: formData });
+                          const data = await res.json();
+                          if (!res.ok) throw new Error(data.error);
+                          
+                          set("logo_url", data.url);
+                          toast("Logo uploaded successfully", "success");
+                        } catch (err: any) {
+                          toast(err.message || "Failed to upload logo", "error");
+                        } finally {
+                          setIsUploadingLogo(false);
+                        }
+                      }}
+                      disabled={isUploadingLogo}
+                      className="block w-full text-xs text-muted-foreground file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:uppercase file:tracking-widest file:bg-white/10 file:text-white hover:file:bg-white/20 transition-all cursor-pointer"
+                    />
+                    {isUploadingLogo && <p className="text-[10px] text-accent mt-2 font-bold uppercase">Uploading...</p>}
+                  </div>
+                </div>
               </FieldGroup>
               <FieldGroup label="Authorized Signatory" icon={Pen}>
                 <Input value={form.signature_name} onChange={(e) => set("signature_name", e.target.value)} placeholder="Name that appears on documents" />

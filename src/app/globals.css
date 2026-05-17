@@ -106,7 +106,7 @@
     @apply sticky top-0 h-screen p-5;
   }
   .app-sidebar-panel {
-    @apply flex h-full flex-col gap-6 rounded-[2rem] p-5;
+    @apply flex h-full flex-col gap-6 rounded-[2rem] p-5 overflow-y-auto overflow-x-hidden;
     background: var(--panel-bg);
     border: 1px solid var(--panel-border);
     backdrop-filter: blur(32px);
@@ -116,7 +116,7 @@
     @apply min-w-0 xl:px-6 xl:py-6;
   }
   .app-content > main {
-    @apply w-full xl:mx-auto xl:min-h-[calc(100vh-3rem)] xl:max-w-7xl xl:overflow-hidden xl:rounded-[2rem];
+    @apply w-full xl:mx-auto xl:h-[calc(100vh-3rem)] xl:max-w-7xl xl:overflow-y-auto xl:rounded-[2rem];
     background: color-mix(in srgb, var(--panel-bg) 65%, transparent);
     border: 1px solid var(--panel-border);
     box-shadow: var(--panel-shadow);
