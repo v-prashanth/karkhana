@@ -47,9 +47,8 @@ export async function GET() {
   }
 
   const now = new Date();
-  const financialYearStart = now.getMonth() >= 3
-    ? `${now.getFullYear()}-04-01`
-    : `${now.getFullYear() - 1}-04-01`;
+  const startYear = now.getMonth() >= 3 ? now.getFullYear() : now.getFullYear() - 1;
+  const financialYear = `${startYear}-${(startYear + 1).toString().slice(-2)}`;
 
   const { data: newOrg, error: orgError } = await admin
     .from("organizations")
@@ -58,11 +57,11 @@ export async function GET() {
       owner_name: authUser.user_metadata?.name || authUser.user_metadata?.full_name || authUser.email?.split("@")[0] || "New User",
       address: "",
       phone: authUser.phone || `email-${authUser.id.slice(0, 8)}`,
-      financial_year_start: financialYearStart,
+      financial_year: financialYear,
       dc_prefix: "DC",
       dc_counter: 1,
-      bill_prefix: "INV",
-      bill_counter: 1,
+      invoice_prefix: "INV",
+      invoice_counter: 1,
     })
     .select("id")
     .single();
