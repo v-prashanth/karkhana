@@ -96,8 +96,14 @@ export async function middleware(request: NextRequest) {
                    request.nextUrl.pathname.startsWith('/api') ||
                    request.nextUrl.pathname.includes('.');
 
+  // Public business profile pages: single-segment paths like /my-business-slug
+  // These are NOT known dashboard routes, so they must be public [slug] profiles
+  const knownRoutes = ['home', 'clients', 'contacts', 'dc', 'expenses', 'finance', 'invoices', 'jobs', 'orders', 'network', 'payments', 'reports', 'settings', 'staff', 'setup', 'employee', 'update-password'];
+  const pathSegments = request.nextUrl.pathname.split('/').filter(Boolean);
+  const isPublicProfile = pathSegments.length === 1 && !knownRoutes.includes(pathSegments[0]);
+
   // 1. If no session and trying to access protected route (and NOT public)
-  if (!session && !isLandingPage && !isLoginPage && !isAuthSupportPage && !isPublicDoc && !isPublicPage && !isStatic) {
+  if (!session && !isLandingPage && !isLoginPage && !isAuthSupportPage && !isPublicDoc && !isPublicPage && !isPublicProfile && !isStatic) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 

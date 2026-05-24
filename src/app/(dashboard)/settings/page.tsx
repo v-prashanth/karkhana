@@ -186,6 +186,50 @@ export default function SettingsPage() {
                 <ThemeToggle />
               </div>
             </SettingsSection>
+
+            {/* Business Card Share */}
+            {organization?.public_slug && (
+              <SettingsSection icon={CreditCard} title="Business Card" description="Your shareable digital business card. Send it to anyone — no login needed to view.">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 p-3 rounded-xl bg-black/40 border border-white/5">
+                    <Globe className="h-4 w-4 text-accent shrink-0" />
+                    <code className="text-sm text-white/70 font-mono flex-1 truncate">
+                      {typeof window !== "undefined" ? window.location.origin : "karkhana.app"}/{organization.public_slug}
+                    </code>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <Button
+                      variant="outline"
+                      className="border-white/10 hover:bg-white/5 text-xs"
+                      onClick={() => {
+                        const url = `${window.location.origin}/${organization.public_slug}`;
+                        navigator.clipboard.writeText(url);
+                        toast("Link copied!", "success");
+                      }}
+                    >
+                      Copy Link
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="border-white/10 hover:bg-white/5 text-xs"
+                      onClick={() => {
+                        const url = `${window.location.origin}/${organization.public_slug}`;
+                        window.open(`https://wa.me/?text=Check out our business card: ${encodeURIComponent(url)}`, "_blank");
+                      }}
+                    >
+                      WhatsApp
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="border-accent/30 text-accent hover:bg-accent/10 text-xs"
+                      onClick={() => router.push(`/${organization.public_slug}`)}
+                    >
+                      Preview
+                    </Button>
+                  </div>
+                </div>
+              </SettingsSection>
+            )}
           </>
         )}
 
