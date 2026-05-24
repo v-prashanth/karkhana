@@ -18,6 +18,7 @@ export async function PATCH(request: Request) {
     'bank_details', 'upi_id', 'invoice_prefix', 'invoice_counter',
     'dc_prefix', 'dc_counter', 'business_type', 'tagline',
     'capabilities', 'year_established', 'employee_count', 'profile_complete',
+    'public_slug',
   ];
 
   const updates: Record<string, unknown> = {};

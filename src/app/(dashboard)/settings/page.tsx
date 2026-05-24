@@ -51,6 +51,7 @@ export default function SettingsPage() {
     signature_name: "", bank_details: "", upi_id: "",
     invoice_prefix: "INV", invoice_counter: 1,
     dc_prefix: "DC", dc_counter: 1,
+    public_slug: "",
   });
 
   useEffect(() => {
@@ -78,6 +79,7 @@ export default function SettingsPage() {
       invoice_counter: organization.invoice_counter || 1,
       dc_prefix: organization.dc_prefix || "DC",
       dc_counter: organization.dc_counter || 1,
+      public_slug: organization.public_slug || "",
     });
   }, [organization]);
 
@@ -188,13 +190,13 @@ export default function SettingsPage() {
             </SettingsSection>
 
             {/* Business Card Share */}
-            {organization?.public_slug && (
-              <SettingsSection icon={CreditCard} title="Business Card" description="Your shareable digital business card. Send it to anyone — no login needed to view.">
+            <SettingsSection icon={CreditCard} title="Business Card" description="Your shareable digital business card. Send it to anyone — no login needed to view.">
+              {form.public_slug ? (
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 p-3 rounded-xl bg-black/40 border border-white/5">
                     <Globe className="h-4 w-4 text-accent shrink-0" />
                     <code className="text-sm text-white/70 font-mono flex-1 truncate">
-                      {typeof window !== "undefined" ? window.location.origin : "karkhana.app"}/{organization.public_slug}
+                      {typeof window !== "undefined" ? window.location.origin : "karkhana.app"}/{form.public_slug}
                     </code>
                   </div>
                   <div className="grid grid-cols-3 gap-2">
@@ -202,7 +204,7 @@ export default function SettingsPage() {
                       variant="outline"
                       className="border-white/10 hover:bg-white/5 text-xs"
                       onClick={() => {
-                        const url = `${window.location.origin}/${organization.public_slug}`;
+                        const url = `${window.location.origin}/${form.public_slug}`;
                         navigator.clipboard.writeText(url);
                         toast("Link copied!", "success");
                       }}
@@ -213,7 +215,7 @@ export default function SettingsPage() {
                       variant="outline"
                       className="border-white/10 hover:bg-white/5 text-xs"
                       onClick={() => {
-                        const url = `${window.location.origin}/${organization.public_slug}`;
+                        const url = `${window.location.origin}/${form.public_slug}`;
                         window.open(`https://wa.me/?text=Check out our business card: ${encodeURIComponent(url)}`, "_blank");
                       }}
                     >
@@ -222,14 +224,35 @@ export default function SettingsPage() {
                     <Button
                       variant="outline"
                       className="border-accent/30 text-accent hover:bg-accent/10 text-xs"
-                      onClick={() => router.push(`/${organization.public_slug}`)}
+                      onClick={() => router.push(`/${form.public_slug}`)}
                     >
                       Preview
                     </Button>
                   </div>
                 </div>
-              </SettingsSection>
-            )}
+              ) : (
+                <div className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    You haven't activated your public Digital Business Card yet. Activate it to get a beautiful shareable profile link.
+                  </p>
+                  <Button
+                    className="w-full h-12 rounded-xl bg-accent text-white font-bold text-xs uppercase tracking-wider hover:bg-accent/90"
+                    onClick={() => {
+                      const base = form.name.toLowerCase()
+                        .replace(/[^a-z0-9]/g, '-')
+                        .replace(/-+/g, '-')
+                        .replace(/^-|-$/g, '');
+                      const suffix = Math.floor(1000 + Math.random() * 9000);
+                      const slug = `${base || 'business'}-${suffix}`;
+                      setForm((p) => ({ ...p, public_slug: slug }));
+                      toast("Business card activated! Click 'Save Changes' at the bottom to save your URL.", "success");
+                    }}
+                  >
+                    Activate Business Card
+                  </Button>
+                </div>
+              )}
+            </SettingsSection>
           </>
         )}
 
