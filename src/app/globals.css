@@ -90,14 +90,60 @@
     box-shadow: var(--panel-shadow);
   }
   .premium-gradient-text {
-    background: linear-gradient(to right, hsl(var(--foreground)), hsl(var(--muted-foreground)));
+    background: linear-gradient(to right, #ffffff, #888888, #d4af37);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     color: transparent;
   }
   .premium-shadow {
-    @apply shadow-[0_8px_32px_rgba(0,0,0,0.4)];
+    @apply shadow-[0_8px_32px_rgba(0,0,0,0.7)];
+  }
+  .cred-card {
+    background: linear-gradient(145deg, #121212, #080808);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 
+      8px 8px 16px rgba(0, 0, 0, 0.6), 
+      -4px -4px 12px rgba(255, 255, 255, 0.02),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .cred-card:hover {
+    box-shadow: 
+      12px 12px 24px rgba(0, 0, 0, 0.8), 
+      -6px -6px 16px rgba(255, 255, 255, 0.03),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+  .cred-inset {
+    background: #030303;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    box-shadow: 
+      inset 3px 3px 6px rgba(0, 0, 0, 0.8), 
+      inset -2px -2px 6px rgba(255, 255, 255, 0.01);
+    border-radius: 16px;
+  }
+  .cred-btn-gold {
+    background: linear-gradient(135deg, #1c1a17, #0e0d0c);
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    color: #d4af37;
+    box-shadow: 
+      4px 4px 10px rgba(0, 0, 0, 0.5),
+      inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    transition: all 0.2s ease;
+  }
+  .cred-btn-gold:hover {
+    border-color: rgba(212, 175, 55, 0.5);
+    box-shadow: 
+      6px 6px 14px rgba(0, 0, 0, 0.7),
+      0 0 12px rgba(212, 175, 55, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    color: #ffd700;
+  }
+  .cred-glow-accent {
+    box-shadow: 0 0 15px rgba(255, 107, 43, 0.15);
+    border-color: rgba(255, 107, 43, 0.3) !important;
   }
   .app-shell {
     @apply min-h-screen xl:grid xl:grid-cols-[320px_minmax(0,1fr)];
