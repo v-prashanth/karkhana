@@ -6,7 +6,8 @@ import {
   Building2, FileText, ImageIcon, Save, Users, ShieldCheck,
   CreditCard, Bell, Globe, Lock, Trash2, ChevronRight,
   Palette, Hash, Receipt, Banknote, QrCode, Pen,
-  Mail, Phone, MapPin, Award, Factory, Calendar
+  Mail, Phone, MapPin, Award, Factory, Calendar,
+  Crown, RotateCcw, Sparkles, BriefcaseBusiness
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
@@ -18,6 +19,7 @@ import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/Toaster";
 import { organizationApi } from "@/lib/api/organization";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 type Tab = "general" | "branding" | "billing" | "security";
 
@@ -41,6 +43,7 @@ export default function SettingsPage() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<Tab>("general");
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [isCardFlipped, setIsCardFlipped] = useState(false);
   const [form, setForm] = useState({
     name: "", owner_name: "", address: "", phone: "", email: "",
     gstin: "", logo_url: "", tagline: "",
@@ -124,6 +127,205 @@ export default function SettingsPage() {
         {/* ═══ GENERAL TAB ═══ */}
         {activeTab === "general" && (
           <>
+            {/* Live Interactive Business Card Preview (At the Top) */}
+            <div className="space-y-4 max-w-[420px] mx-auto w-full mb-8">
+              <div className="flex items-center justify-between">
+                <h3 className="text-[10px] font-black uppercase tracking-widest text-[#888]">Live Business Card Preview</h3>
+                {form.public_slug && (
+                  <span className="flex items-center gap-1 text-[9px] bg-green-500/10 text-green-400 font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                    <ShieldCheck className="h-3 w-3" /> Active
+                  </span>
+                )}
+              </div>
+
+              {/* Card Container */}
+              <div className="w-full" style={{ perspective: "1200px" }}>
+                <div
+                  onClick={() => setIsCardFlipped(!isCardFlipped)}
+                  className={cn(
+                    "relative w-full cursor-pointer transition-transform duration-500 ease-out",
+                    "[transform-style:preserve-3d]",
+                    isCardFlipped && "[transform:rotateY(180deg)]"
+                  )}
+                  style={{ aspectRatio: "1.6 / 1" }}
+                >
+                  {/* FRONT */}
+                  <div className="absolute inset-0 [backface-visibility:hidden] rounded-[20px] overflow-hidden border border-white/[0.08]">
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#111] via-[#0a0a0a] to-[#080808]" />
+                    <div className="absolute top-0 left-6 right-6 h-[1.5px] rounded-full opacity-80"
+                      style={{ background: `linear-gradient(90deg, transparent, ${form.brand_primary_color || '#ff6b2b'}, transparent)` }} />
+
+                    <div className="relative h-full flex flex-col justify-between p-5 text-white text-left">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="h-10 w-10 rounded-xl flex items-center justify-center border border-white/10 bg-white/[0.04] overflow-hidden shrink-0">
+                            {form.logo_url ? (
+                              <Image src={form.logo_url} alt={form.name} width={40} height={40} className="h-full w-full object-contain p-1" unoptimized />
+                            ) : (
+                              <Building2 className="h-5 w-5 text-white/40" />
+                            )}
+                          </div>
+                          {organization?.is_verified && (
+                            <div className="h-5 w-5 rounded-full flex items-center justify-center" style={{ backgroundColor: form.brand_primary_color || '#ff6b2b' }}>
+                              <Crown className="h-2.5 w-2.5 text-white" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="text-right">
+                          <p className="text-[7px] font-bold uppercase tracking-[0.3em] text-white/20">EST.</p>
+                          <p className="text-xs font-bold text-white/40 font-mono">{form.year_established || "—"}</p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <h4 className="text-lg font-black tracking-tight text-white uppercase leading-tight truncate">
+                          {form.name || "Your Business"}
+                        </h4>
+                        {form.tagline && (
+                          <p className="text-[9px] text-white/40 leading-relaxed truncate max-w-[280px]">{form.tagline}</p>
+                        )}
+                      </div>
+
+                      <div className="flex items-end justify-between">
+                        <div className="flex items-center gap-3 text-[8px] font-medium text-white/30 uppercase tracking-wider font-semibold">
+                          <span className="flex items-center gap-0.5"><MapPin className="h-2.5 w-2.5" />{form.address?.split(",").pop()?.trim() || "India"}</span>
+                          <span className="flex items-center gap-0.5"><BriefcaseBusiness className="h-2.5 w-2.5" />{form.business_type || organization?.business_type?.replace("_", " ")}</span>
+                        </div>
+                        <span className="flex items-center gap-1 text-[8px] text-white/20 uppercase tracking-widest font-semibold">
+                          <RotateCcw className="h-2.5 w-2.5" /> Flip
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* BACK */}
+                  <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-[20px] overflow-hidden border border-white/[0.08]">
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#0e0e0e] via-[#080808] to-[#050505]" />
+                    <div className="absolute bottom-0 left-6 right-6 h-[1.5px] rounded-full opacity-80"
+                      style={{ background: `linear-gradient(90deg, transparent, ${form.brand_primary_color || '#ff6b2b'}, transparent)` }} />
+
+                    <div className="relative h-full flex flex-col justify-between p-5 text-white text-left">
+                      <div className="space-y-2">
+                        {form.owner_name && (
+                          <p className="text-xs font-bold text-white/80">{form.owner_name}</p>
+                        )}
+                        {form.phone && (
+                          <div className="flex items-center gap-1.5 text-[10px] text-white/50">
+                            <Phone className="h-2.5 w-2.5 shrink-0" style={{ color: form.brand_primary_color || '#ff6b2b' }} />
+                            <span className="font-mono">{form.phone}</span>
+                          </div>
+                        )}
+                        {form.email && (
+                          <div className="flex items-center gap-1.5 text-[10px] text-white/50">
+                            <Mail className="h-2.5 w-2.5 shrink-0" style={{ color: form.brand_primary_color || '#ff6b2b' }} />
+                            <span className="truncate">{form.email}</span>
+                          </div>
+                        )}
+                        {form.address && (
+                          <div className="flex items-start gap-1.5 text-[10px] text-white/50 leading-tight">
+                            <MapPin className="h-2.5 w-2.5 shrink-0 mt-0.5" style={{ color: form.brand_primary_color || '#ff6b2b' }} />
+                            <span className="line-clamp-2">{form.address}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex items-end justify-between">
+                        <div className="space-y-0.5">
+                          {form.gstin && (
+                            <p className="text-[8px] font-mono text-white/20 uppercase tracking-wider">GSTIN: {form.gstin}</p>
+                          )}
+                          <div className="flex items-center gap-1">
+                            <div className="h-3.5 w-3.5 rounded-md flex items-center justify-center" style={{ backgroundColor: `${form.brand_primary_color || '#ff6b2b'}20` }}>
+                              <Sparkles className="h-2 w-2" style={{ color: form.brand_primary_color || '#ff6b2b' }} />
+                            </div>
+                            <span className="text-[7px] font-bold uppercase tracking-[0.3em] text-white/20">Karkhana</span>
+                          </div>
+                        </div>
+                        <span className="flex items-center gap-1 text-[8px] text-white/20 uppercase tracking-widest font-semibold">
+                          <RotateCcw className="h-2.5 w-2.5" /> Flip
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions panel directly below the card */}
+              {form.public_slug ? (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 p-3 rounded-xl bg-black/40 border border-white/5">
+                    <Globe className="h-4 w-4 text-accent shrink-0" />
+                    <code className="text-xs text-white/70 font-mono flex-1 truncate">
+                      {typeof window !== "undefined" ? window.location.origin : "karkhana.app"}/{form.public_slug}
+                    </code>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <Button
+                      variant="outline"
+                      className="border-white/10 hover:bg-white/5 text-[10px] font-bold uppercase tracking-wider"
+                      onClick={() => {
+                        const url = `${window.location.origin}/${form.public_slug}`;
+                        navigator.clipboard.writeText(url);
+                        toast("Link copied!", "success");
+                      }}
+                    >
+                      Copy Link
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="border-white/10 hover:bg-white/5 text-[10px] font-bold uppercase tracking-wider"
+                      onClick={() => {
+                        const url = `${window.location.origin}/${form.public_slug}`;
+                        window.open(`https://wa.me/?text=Check out our business card: ${encodeURIComponent(url)}`, "_blank");
+                      }}
+                    >
+                      WhatsApp
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="border-accent/30 text-accent hover:bg-accent/10 text-[10px] font-bold uppercase tracking-wider"
+                      onClick={() => router.push(`/${form.public_slug}`)}
+                    >
+                      Preview
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-4 rounded-2xl border border-white/5 bg-white/[0.01] space-y-3">
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    You haven't activated your public Digital Business Card yet. Activate it to get a secure shareable profile link for your business.
+                  </p>
+                  <Button
+                    className="w-full h-12 rounded-xl bg-accent text-white font-bold text-xs uppercase tracking-widest hover:bg-accent/90"
+                    onClick={async () => {
+                      const base = form.name.toLowerCase()
+                        .replace(/[^a-z0-9]/g, '-')
+                        .replace(/-+/g, '-')
+                        .replace(/^-|-$/g, '');
+                      const suffix = Math.floor(1000 + Math.random() * 9000);
+                      const slug = `${base || 'business'}-${suffix}`;
+                      
+                      // Immediately update state and save!
+                      setForm((p) => ({ ...p, public_slug: slug }));
+                      try {
+                        const nextOrg = await organizationApi.update({
+                          ...form,
+                          public_slug: slug,
+                          year_established: form.year_established ? parseInt(form.year_established) : null,
+                        });
+                        setOrganization(nextOrg);
+                        toast("Digital Business Card Activated & Saved Successfully!", "success");
+                      } catch (err: any) {
+                        toast(err.message || "Failed to activate business card. Make sure you applied database migrations.", "error");
+                      }
+                    }}
+                  >
+                    Activate Business Card
+                  </Button>
+                </div>
+              )}
+            </div>
+
             <SettingsSection
               icon={Building2} title="Business Information"
               description="Your legal business details. These appear on invoices and documents."
@@ -187,71 +389,6 @@ export default function SettingsPage() {
                 </div>
                 <ThemeToggle />
               </div>
-            </SettingsSection>
-
-            {/* Business Card Share */}
-            <SettingsSection icon={CreditCard} title="Business Card" description="Your shareable digital business card. Send it to anyone — no login needed to view.">
-              {form.public_slug ? (
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2 p-3 rounded-xl bg-black/40 border border-white/5">
-                    <Globe className="h-4 w-4 text-accent shrink-0" />
-                    <code className="text-sm text-white/70 font-mono flex-1 truncate">
-                      {typeof window !== "undefined" ? window.location.origin : "karkhana.app"}/{form.public_slug}
-                    </code>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    <Button
-                      variant="outline"
-                      className="border-white/10 hover:bg-white/5 text-xs"
-                      onClick={() => {
-                        const url = `${window.location.origin}/${form.public_slug}`;
-                        navigator.clipboard.writeText(url);
-                        toast("Link copied!", "success");
-                      }}
-                    >
-                      Copy Link
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="border-white/10 hover:bg-white/5 text-xs"
-                      onClick={() => {
-                        const url = `${window.location.origin}/${form.public_slug}`;
-                        window.open(`https://wa.me/?text=Check out our business card: ${encodeURIComponent(url)}`, "_blank");
-                      }}
-                    >
-                      WhatsApp
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="border-accent/30 text-accent hover:bg-accent/10 text-xs"
-                      onClick={() => router.push(`/${form.public_slug}`)}
-                    >
-                      Preview
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <p className="text-sm text-muted-foreground">
-                    You haven't activated your public Digital Business Card yet. Activate it to get a beautiful shareable profile link.
-                  </p>
-                  <Button
-                    className="w-full h-12 rounded-xl bg-accent text-white font-bold text-xs uppercase tracking-wider hover:bg-accent/90"
-                    onClick={() => {
-                      const base = form.name.toLowerCase()
-                        .replace(/[^a-z0-9]/g, '-')
-                        .replace(/-+/g, '-')
-                        .replace(/^-|-$/g, '');
-                      const suffix = Math.floor(1000 + Math.random() * 9000);
-                      const slug = `${base || 'business'}-${suffix}`;
-                      setForm((p) => ({ ...p, public_slug: slug }));
-                      toast("Business card activated! Click 'Save Changes' at the bottom to save your URL.", "success");
-                    }}
-                  >
-                    Activate Business Card
-                  </Button>
-                </div>
-              )}
             </SettingsSection>
           </>
         )}
@@ -546,9 +683,9 @@ export default function SettingsPage() {
           </>
         )}
 
-        {/* Save Button — fixed at bottom */}
+        {/* Save Button — static at bottom */}
         {activeTab !== "security" && (
-          <div className="sticky bottom-6 z-30">
+          <div className="pt-6 pb-12">
             <Button className="w-full h-14 rounded-2xl bg-white text-black font-black uppercase tracking-widest text-xs shadow-[0_8px_32px_rgba(255,255,255,0.1)] hover:bg-white/90"
               onClick={() => saveSettings.mutate()} disabled={saveSettings.isPending}>
               <Save className="mr-2 h-4 w-4" />
