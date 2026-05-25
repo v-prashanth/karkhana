@@ -47,7 +47,7 @@ export default function SettingsPage() {
   const [form, setForm] = useState({
     name: "", owner_name: "", address: "", phone: "", email: "",
     gstin: "", logo_url: "", tagline: "",
-    capabilities: [] as string[], year_established: "", employee_count: "",
+    capabilities: "", year_established: "", employee_count: "",
     brand_primary_color: "#ff7a1a", brand_secondary_color: "#171717",
     document_template: "modern",
     footer_text: "Managed with Karkhana | karkhana.app",
@@ -68,7 +68,7 @@ export default function SettingsPage() {
       gstin: organization.gstin || "",
       logo_url: organization.logo_url || "",
       tagline: organization.tagline || "",
-      capabilities: organization.capabilities || [],
+      capabilities: organization.capabilities ? organization.capabilities.join(", ") : "",
       year_established: organization.year_established?.toString() || "",
       employee_count: organization.employee_count || "",
       brand_primary_color: organization.brand_primary_color || "#ff7a1a",
@@ -89,6 +89,9 @@ export default function SettingsPage() {
   const saveSettings = useMutation({
     mutationFn: () => organizationApi.update({
       ...form,
+      capabilities: typeof form.capabilities === "string"
+        ? (form.capabilities as string).split(",").map(s => s.trim()).filter(Boolean)
+        : form.capabilities,
       year_established: form.year_established ? parseInt(form.year_established) : null,
     }),
     onSuccess: (next) => { setOrganization(next); toast("Settings saved", "success"); },
@@ -374,8 +377,8 @@ export default function SettingsPage() {
               </FieldGroup>
               <FieldGroup label="Capabilities">
                 <Input
-                  value={form.capabilities.join(", ")}
-                  onChange={(e) => set("capabilities", e.target.value.split(",").map(s => s.trim()).filter(Boolean))}
+                  value={form.capabilities}
+                  onChange={(e) => set("capabilities", e.target.value)}
                   placeholder="CNC, Fabrication, Turning (comma separated)"
                 />
               </FieldGroup>
