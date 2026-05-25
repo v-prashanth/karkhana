@@ -313,6 +313,9 @@ export default function SettingsPage() {
                       try {
                         const nextOrg = await organizationApi.update({
                           ...form,
+                          capabilities: typeof form.capabilities === "string"
+                            ? (form.capabilities as string).split(",").map(s => s.trim()).filter(Boolean)
+                            : form.capabilities,
                           public_slug: slug,
                           year_established: form.year_established ? parseInt(form.year_established) : null,
                         });
