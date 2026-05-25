@@ -65,6 +65,12 @@ ALTER TABLE organizations ADD COLUMN IF NOT EXISTS profile_complete BOOLEAN DEFA
 
 CREATE INDEX IF NOT EXISTS idx_organizations_public_slug ON organizations(public_slug) WHERE public_slug IS NOT NULL;
 
+-- Allow anyone (including guests/anonymous users) to read organizations that have activated their business card slug
+DROP POLICY IF EXISTS "Anyone can view public business profiles" ON public.organizations;
+CREATE POLICY "Anyone can view public business profiles" ON public.organizations
+  FOR SELECT
+  USING ( public_slug IS NOT NULL );
+
 -- ============================================================
 -- 3. PROFILES TABLE (00001 uses "profiles", 00000 uses "users")
 -- ============================================================
