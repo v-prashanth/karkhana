@@ -24,6 +24,7 @@ import { QuickCostLogModal } from "@/components/costing/QuickCostLogModal";
 import { CostBreakdownModal } from "@/components/costing/CostBreakdownModal";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { TargetProgressCard } from "@/components/targets/TargetProgressCard";
 
 export default function CostingPage() {
   const [isLogOpen, setIsLogOpen] = useState(false);
@@ -98,6 +99,8 @@ export default function CostingPage() {
           </div>
         ) : (
           <>
+            <TargetProgressCard />
+
             {/* Global Costing KPIs Cards grid */}
             <section className="grid grid-cols-2 gap-3 xl:grid-cols-4">
               <Card className="glass-panel overflow-hidden border-l-2 border-l-green-500/50 relative">
