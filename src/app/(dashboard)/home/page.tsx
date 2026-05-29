@@ -35,8 +35,6 @@ import { useToast } from "@/components/ui/Toaster";
 import { generatePaymentReminderWhatsAppMessage, generateWhatsAppLink } from "@/lib/utils/whatsapp";
 import type { DashboardMetrics, Invoice } from "@/types/database";
 
-import { TargetProgressCard } from "@/components/targets/TargetProgressCard";
-
 export default function DashboardPage() {
   const router = useRouter();
   const { user, organization, logout, authHydrated } = useStore();
@@ -266,8 +264,6 @@ export default function DashboardPage() {
       )}
 
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="relative z-10 space-y-6 p-5 xl:space-y-8 xl:p-8">
-        <TargetProgressCard />
-
         <section className="grid gap-3 xl:grid-cols-[minmax(0,1.5fr)_minmax(320px,0.8fr)]">
           <Card className="glass-panel overflow-hidden relative">
             <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
