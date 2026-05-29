@@ -35,25 +35,28 @@
   }
 
   .dark {
-    --background: 0 0% 3%;
+    --background: 0 0% 1.5%;
     --foreground: 0 0% 98%;
-    --card: 0 0% 6%;
+    --card: 0 0% 3%;
     --card-foreground: 0 0% 98%;
-    --popover: 0 0% 5%;
+    --popover: 0 0% 2.5%;
     --popover-foreground: 0 0% 98%;
-    --secondary: 0 0% 12%;
+    --secondary: 0 0% 6%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 20%;
-    --muted-foreground: 0 0% 85%;
-    --border: 0 0% 25%;
-    --input: 0 0% 25%;
-    --glass-bg: rgba(255, 255, 255, 0.05);
-    --glass-border: rgba(255, 255, 255, 0.1);
-    --glass-shadow: 0 8px 32px -8px rgba(0, 0, 0, 0.5);
-    --panel-bg: rgba(0, 0, 0, 0.4);
-    --panel-border: rgba(255, 255, 255, 0.05);
-    --panel-shadow: 0 30px 80px -42px rgba(0, 0, 0, 0.85);
-    --grid-opacity: 0.08;
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 75%;
+    --border: 0 0% 8%;
+    --input: 0 0% 8%;
+    --accent: 43 75% 53%;
+    --accent-foreground: 0 0% 100%;
+    --ring: 43 75% 53%;
+    --glass-bg: rgba(0, 0, 0, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.03);
+    --glass-shadow: 0 8px 32px -8px rgba(0, 0, 0, 0.8);
+    --panel-bg: rgba(0, 0, 0, 0.65);
+    --panel-border: rgba(255, 255, 255, 0.03);
+    --panel-shadow: 0 30px 80px -42px rgba(0, 0, 0, 0.95);
+    --grid-opacity: 0.04;
   }
 }
 
@@ -64,12 +67,53 @@
     touch-action: manipulation;
   }
   body {
-    @apply bg-background text-foreground antialiased selection:bg-accent/30 tracking-tight;
+    @apply bg-background text-foreground antialiased selection:bg-accent/20 tracking-tight;
     background-image: 
-      radial-gradient(circle at 15% 0%, rgba(255, 107, 43, 0.05) 0%, transparent 40%),
-      radial-gradient(circle at 85% 100%, rgba(255, 255, 255, 0.05) 0%, transparent 40%);
+      radial-gradient(circle at 15% 0%, rgba(212, 175, 55, 0.03) 0%, transparent 40%),
+      radial-gradient(circle at 85% 100%, rgba(255, 255, 255, 0.015) 0%, transparent 40%);
     background-attachment: fixed;
   }
+
+  /* Global CRED Neumorphic Overrides for all Cards and Panels */
+  .bg-card, 
+  .rounded-2xl.border, 
+  .rounded-3xl.border,
+  .rounded-xl.border,
+  .border-white\/5 {
+    background: linear-gradient(145deg, #101010, #060606) !important;
+    border: 1px solid rgba(255, 255, 255, 0.03) !important;
+    box-shadow: 
+      6px 6px 16px rgba(0, 0, 0, 0.8), 
+      -3px -3px 12px rgba(255, 255, 255, 0.012),
+      inset 0 1px 0 rgba(255, 255, 255, 0.03) !important;
+  }
+
+  /* Global CRED Neumorphic Insets for all inputs, textareas, and selects */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="color"],
+  textarea, 
+  select {
+    background: #030303 !important;
+    border: 1px solid rgba(255, 255, 255, 0.02) !important;
+    box-shadow: 
+      inset 2px 2px 6px rgba(0, 0, 0, 0.9), 
+      inset -1px -1px 6px rgba(255, 255, 255, 0.01) !important;
+    color: #f3f4f6 !important;
+    transition: all 0.2s ease !important;
+  }
+  
+  input:focus, textarea:focus, select:focus {
+    border-color: rgba(212, 175, 55, 0.3) !important;
+    box-shadow: 
+      inset 2px 2px 6px rgba(0, 0, 0, 0.95), 
+      inset -1px -1px 6px rgba(255, 255, 255, 0.015),
+      0 0 8px rgba(212, 175, 55, 0.1) !important;
+  }
+
   ::-webkit-scrollbar {
     width: 0px;
     background: transparent;

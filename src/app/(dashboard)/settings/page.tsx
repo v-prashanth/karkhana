@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Building2, FileText, ImageIcon, Save, Users, ShieldCheck,
   CreditCard, Bell, Globe, Lock, Trash2, ChevronRight,
   Palette, Hash, Receipt, Banknote, QrCode, Pen,
   Mail, Phone, MapPin, Award, Factory, Calendar,
-  Crown, RotateCcw, Sparkles, BriefcaseBusiness
+  Crown, RotateCcw, Sparkles, BriefcaseBusiness, TrendingUp, Wallet
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
@@ -18,6 +18,8 @@ import { useStore } from "@/store/useStore";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/Toaster";
 import { organizationApi } from "@/lib/api/organization";
+import { targetsApi } from "@/lib/api/targets";
+import { TargetSetupModal } from "@/components/targets/TargetSetupModal";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 
@@ -44,6 +46,15 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<Tab>("general");
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const [isCardFlipped, setIsCardFlipped] = useState(false);
+  const [isSetupModalOpen, setIsSetupModalOpen] = useState(false);
+  const [selectedTargetType, setSelectedTargetType] = useState<"revenue" | "collections" | "production">("revenue");
+  const queryClient = useQueryClient();
+
+  const { data: activeTargets = [] } = useQuery({
+    queryKey: ["activeTargets"],
+    queryFn: () => targetsApi.getActive(),
+  });
+  const activeTarget = activeTargets.find((t) => t.target_type === selectedTargetType);
   const [form, setForm] = useState({
     name: "", owner_name: "", address: "", phone: "", email: "",
     gstin: "", logo_url: "", tagline: "",
@@ -396,6 +407,38 @@ export default function SettingsPage() {
                 <ThemeToggle />
               </div>
             </SettingsSection>
+
+            <SettingsSection icon={Award} title="Business Targets & Goals" description="Set and manage your annual revenue and collections targets.">
+              <div className="space-y-4">
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Establish targets to view progress meters on your dashboard, track streaks, and monitor projections.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button
+                    onClick={() => {
+                      setSelectedTargetType("revenue");
+                      setIsSetupModalOpen(true);
+                    }}
+                    variant="outline"
+                    className="flex-1 h-12 rounded-xl border-white/5 bg-white/[0.01] hover:bg-white/5 text-xs font-bold uppercase tracking-wider text-white gap-2"
+                  >
+                    <TrendingUp className="h-4 w-4 text-accent" />
+                    Manage Revenue Target
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setSelectedTargetType("collections");
+                      setIsSetupModalOpen(true);
+                    }}
+                    variant="outline"
+                    className="flex-1 h-12 rounded-xl border-white/5 bg-white/[0.01] hover:bg-white/5 text-xs font-bold uppercase tracking-wider text-white gap-2"
+                  >
+                    <Wallet className="h-4 w-4 text-accent" />
+                    Manage Collections Target
+                  </Button>
+                </div>
+              </div>
+            </SettingsSection>
           </>
         )}
 
@@ -700,6 +743,16 @@ export default function SettingsPage() {
           </div>
         )}
       </div>
+
+      <TargetSetupModal
+        isOpen={isSetupModalOpen}
+        onClose={() => setIsSetupModalOpen(false)}
+        activeTarget={activeTarget}
+        targetType={selectedTargetType}
+        onSuccess={() => {
+          queryClient.invalidateQueries({ queryKey: ["activeTargets"] });
+        }}
+      />
     </main>
   );
 }

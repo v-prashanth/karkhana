@@ -193,18 +193,18 @@ export default function RegisterPage() {
             {step === "input" && method === "otp" && (
               <motion.div key="otp_input" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ duration: 0.3 }} className="space-y-8">
                 <div>
-                  <h1 className="text-3xl font-medium tracking-tight text-white/95">Create your account</h1>
+                  <h1 className="text-3xl font-black uppercase italic tracking-tight bg-gradient-to-r from-white via-white to-accent bg-clip-text text-transparent">Create your account</h1>
                   <p className="mt-3 text-sm text-white/50 font-light">Enter your email to receive a secure sign-up code.</p>
                 </div>
 
                 <form onSubmit={handleOtpRequestSubmit} className="space-y-6">
                   <div className="space-y-2">
-                    <label htmlFor="email_otp" className="text-sm font-medium text-white/70">Work email <span className="text-red-500">*</span></label>
+                    <label htmlFor="email_otp" className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/75">Work email <span className="text-red-500">*</span></label>
                     <Input
                       id="email_otp"
                       type="email"
                       placeholder="you@company.com"
-                      className="h-14 bg-[#111111] border-[#1E1E1E] focus:border-accent focus:ring-1 focus:ring-accent text-sm font-light text-white rounded-xl transition-all"
+                      className="h-14 bg-[#030303] border-white/5 shadow-[inset_2px_2px_6px_rgba(0,0,0,0.9),inset_-1px_-1px_6px_rgba(255,255,255,0.01)] text-white text-sm font-light rounded-xl transition-all focus:border-accent/40 focus:ring-0 focus:shadow-[inset_2px_2px_6px_rgba(0,0,0,0.95),0_0_8px_rgba(212,175,55,0.1)]"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       autoFocus
@@ -212,32 +212,32 @@ export default function RegisterPage() {
                     />
                   </div>
 
-                  <Button type="submit" className="w-full h-14 rounded-xl bg-white text-black text-sm font-bold hover:bg-white/90 transition-all" disabled={loading || !email}>
+                  <Button type="submit" className="w-full h-14 rounded-xl bg-gradient-to-r from-accent to-[#ffd700] text-black font-black uppercase tracking-widest text-[10px] italic shadow-[0_8px_20px_rgba(255,122,26,0.2)] hover:shadow-[0_8px_25px_rgba(255,122,26,0.4)] transition-all hover:scale-[1.01] active:scale-[0.99] border border-accent/20 flex items-center justify-center" disabled={loading || !email}>
                     {loading ? <Loader2 className="h-5 w-5 animate-spin text-black" /> : "Send Sign up Code"}
                   </Button>
                 </form>
 
-                <div className="text-center text-sm">
+                <div className="text-center text-xs font-bold tracking-wider uppercase">
                   <p className="text-white/40">
                     Already have an account?{" "}
-                    <Link href="/login" className="text-white hover:underline font-medium ml-1">Log in</Link>
+                    <Link href="/login" className="text-white hover:underline font-bold ml-1">Log in</Link>
                   </p>
                 </div>
 
                 <div className="relative py-2">
                   <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-[#1E1E1E]"></div>
+                    <div className="w-full border-t border-white/5"></div>
                   </div>
-                  <div className="relative flex justify-center text-xs uppercase">
+                  <div className="relative flex justify-center text-[10px] uppercase font-black tracking-widest">
                     <span className="bg-[#030303] px-4 text-white/30 tracking-widest">or</span>
                   </div>
                 </div>
 
                 <div className="space-y-4">
-                  <Button onClick={() => setMethod("password")} variant="outline" className="w-full h-14 rounded-xl border-[#1E1E1E] bg-transparent text-sm font-medium text-white/80 hover:bg-[#111111] hover:text-white transition-all justify-center" disabled={loading}>
+                  <Button onClick={() => setMethod("password")} variant="outline" className="w-full h-14 rounded-xl bg-gradient-to-b from-[#121212] to-[#080808] border border-white/5 shadow-[6px_6px_16px_rgba(0,0,0,0.8),-3px_-3px_12px_rgba(255,255,255,0.012),inset_0_1px_0_rgba(255,255,255,0.03)] hover:border-white/10 hover:scale-[1.01] transition-all text-white font-bold uppercase tracking-widest text-[9px] italic flex items-center justify-center" disabled={loading}>
                     Use password instead
                   </Button>
-                  <Button onClick={handleGoogleLogin} variant="outline" className="w-full h-14 rounded-xl border-[#1E1E1E] bg-transparent text-sm font-medium text-white/80 hover:bg-[#111111] hover:text-white transition-all justify-center" disabled={loading}>
+                  <Button onClick={handleGoogleLogin} variant="outline" className="w-full h-14 rounded-xl bg-gradient-to-b from-[#121212] to-[#080808] border border-white/5 shadow-[6px_6px_16px_rgba(0,0,0,0.8),-3px_-3px_12px_rgba(255,255,255,0.012),inset_0_1px_0_rgba(255,255,255,0.03)] hover:border-white/10 hover:scale-[1.01] transition-all text-white font-bold uppercase tracking-widest text-[9px] italic flex items-center justify-center" disabled={loading}>
                     <Image src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width={18} height={18} className="mr-3" unoptimized />
                     Continue with Google
                   </Button>
@@ -249,7 +249,7 @@ export default function RegisterPage() {
             {step === "verify" && method === "otp" && (
               <motion.div key="otp_verify" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3 }} className="space-y-8">
                 <div>
-                  <h1 className="text-3xl font-medium tracking-tight text-white/95">Enter sign-up code</h1>
+                  <h1 className="text-3xl font-black uppercase italic tracking-tight bg-gradient-to-r from-white via-white to-accent bg-clip-text text-transparent">Enter sign-up code</h1>
                   <p className="mt-3 text-sm text-white/50 font-light">Sent to <span className="text-white font-medium">{email}</span></p>
                 </div>
 
@@ -259,7 +259,7 @@ export default function RegisterPage() {
                   <Button
                     type="button"
                     onClick={() => { if (otpValue.length === 6) handleOTPComplete(otpValue); }}
-                    className="w-full h-14 rounded-xl bg-white text-black text-sm font-bold hover:bg-white/90 transition-all"
+                    className="w-full h-14 rounded-xl bg-gradient-to-r from-accent to-[#ffd700] text-black font-black uppercase tracking-widest text-[10px] italic shadow-[0_8px_20px_rgba(255,122,26,0.2)] hover:shadow-[0_8px_25px_rgba(255,122,26,0.4)] transition-all hover:scale-[1.01] active:scale-[0.99] border border-accent/20 flex items-center justify-center"
                     disabled={loading || otpValue.length < 6}
                   >
                     {loading ? <Loader2 className="h-5 w-5 animate-spin text-black" /> : "Verify & Sign Up"}
@@ -269,14 +269,14 @@ export default function RegisterPage() {
                     <button
                       onClick={handleOtpRequestSubmit}
                       disabled={countdown > 0 || loading}
-                      className="text-sm font-medium text-white/60 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="text-xs font-bold uppercase tracking-wider text-white/60 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {countdown > 0 ? `Resend code (${countdown}s)` : "Resend code"}
                     </button>
                     <button
                       onClick={() => { setStep("input"); setOtpValue(""); }}
                       disabled={loading}
-                      className="text-sm font-medium text-white/60 hover:text-white transition-colors flex items-center justify-center gap-1"
+                      className="text-xs font-bold uppercase tracking-wider text-white/60 hover:text-white transition-colors flex items-center justify-center gap-1"
                     >
                       <ChevronLeft className="h-4 w-4" /> Change email
                     </button>
@@ -284,23 +284,23 @@ export default function RegisterPage() {
 
                   <div className="relative py-2">
                     <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-[#1E1E1E]"></div>
+                      <div className="w-full border-t border-white/5"></div>
                     </div>
-                    <div className="relative flex justify-center text-xs uppercase">
+                    <div className="relative flex justify-center text-[10px] uppercase font-black tracking-widest">
                       <span className="bg-[#030303] px-4 text-white/30 tracking-widest">or</span>
                     </div>
                   </div>
 
                   <div className="space-y-4">
-                    <Button onClick={() => { setMethod("password"); setStep("input"); setOtpValue(""); }} variant="outline" className="w-full h-14 rounded-xl border-[#1E1E1E] bg-transparent text-sm font-medium text-white/80 hover:bg-[#111111] hover:text-white transition-all justify-center" disabled={loading}>
+                    <Button onClick={() => { setMethod("password"); setStep("input"); setOtpValue(""); }} variant="outline" className="w-full h-14 rounded-xl bg-gradient-to-b from-[#121212] to-[#080808] border border-white/5 shadow-[6px_6px_16px_rgba(0,0,0,0.8),-3px_-3px_12px_rgba(255,255,255,0.012),inset_0_1px_0_rgba(255,255,255,0.03)] hover:border-white/10 hover:scale-[1.01] transition-all text-white font-bold uppercase tracking-widest text-[9px] italic flex items-center justify-center" disabled={loading}>
                       Use password instead
                     </Button>
                   </div>
 
-                  <div className="text-center text-sm">
+                  <div className="text-center text-xs font-bold tracking-wider uppercase">
                     <p className="text-white/40">
                       Already have an account?{" "}
-                      <Link href="/login" className="text-white hover:underline font-medium ml-1">Log in</Link>
+                      <Link href="/login" className="text-white hover:underline font-bold ml-1">Log in</Link>
                     </p>
                   </div>
                 </div>
@@ -311,17 +311,17 @@ export default function RegisterPage() {
             {step === "input" && method === "password" && (
               <motion.div key="password_input" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3 }} className="space-y-8">
                 <div>
-                  <h1 className="text-3xl font-medium tracking-tight text-white/95">Create your account</h1>
+                  <h1 className="text-3xl font-black uppercase italic tracking-tight bg-gradient-to-r from-white via-white to-accent bg-clip-text text-transparent">Create your account</h1>
                   <p className="mt-3 text-sm text-white/50 font-light">Join thousands of Indian SMBs running their business flawlessly.</p>
                 </div>
 
                 <form onSubmit={handleRegisterSubmit} className="space-y-6">
                   <div className="space-y-2">
-                    <label htmlFor="email" className="text-sm font-medium text-white/70">Work email <span className="text-red-500">*</span></label>
+                    <label htmlFor="email" className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/75">Work email <span className="text-red-500">*</span></label>
                     <Input
                       id="email"
                       type="email"
-                      className="h-14 bg-[#111111] border-[#1E1E1E] focus:border-accent focus:ring-1 focus:ring-accent text-sm font-light text-white rounded-xl transition-all"
+                      className="h-14 bg-[#030303] border-white/5 shadow-[inset_2px_2px_6px_rgba(0,0,0,0.9),inset_-1px_-1px_6px_rgba(255,255,255,0.01)] text-white text-sm font-light rounded-xl transition-all focus:border-accent/40 focus:ring-0 focus:shadow-[inset_2px_2px_6px_rgba(0,0,0,0.95),0_0_8px_rgba(212,175,55,0.1)]"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
@@ -329,12 +329,12 @@ export default function RegisterPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <label htmlFor="password" className="text-sm font-medium text-white/70">Password <span className="text-red-500">*</span></label>
+                    <label htmlFor="password" className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/75">Password <span className="text-red-500">*</span></label>
                     <div className="relative">
                       <Input
                         id="password"
                         type={showPassword ? "text" : "password"}
-                        className="h-14 bg-[#111111] border-[#1E1E1E] focus:border-accent focus:ring-1 focus:ring-accent text-sm font-light text-white rounded-xl transition-all pr-12"
+                        className="h-14 bg-[#030303] border-white/5 shadow-[inset_2px_2px_6px_rgba(0,0,0,0.9),inset_-1px_-1px_6px_rgba(255,255,255,0.01)] text-white text-sm font-light rounded-xl transition-all pr-12 focus:border-accent/40 focus:ring-0 focus:shadow-[inset_2px_2px_6px_rgba(0,0,0,0.95),0_0_8px_rgba(212,175,55,0.1)]"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
@@ -347,12 +347,12 @@ export default function RegisterPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <label htmlFor="confirmPassword" className="text-sm font-medium text-white/70">Confirm password <span className="text-red-500">*</span></label>
+                    <label htmlFor="confirmPassword" className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/75">Confirm password <span className="text-red-500">*</span></label>
                     <div className="relative">
                       <Input
                         id="confirmPassword"
                         type={showConfirmPassword ? "text" : "password"}
-                        className="h-14 bg-[#111111] border-[#1E1E1E] focus:border-accent focus:ring-1 focus:ring-accent text-sm font-light text-white rounded-xl transition-all pr-12"
+                        className="h-14 bg-[#030303] border-white/5 shadow-[inset_2px_2px_6px_rgba(0,0,0,0.9),inset_-1px_-1px_6px_rgba(255,255,255,0.01)] text-white text-sm font-light rounded-xl transition-all pr-12 focus:border-accent/40 focus:ring-0 focus:shadow-[inset_2px_2px_6px_rgba(0,0,0,0.95),0_0_8px_rgba(212,175,55,0.1)]"
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         required
@@ -363,32 +363,32 @@ export default function RegisterPage() {
                     </div>
                   </div>
 
-                  <Button type="submit" className="w-full h-14 rounded-xl bg-white text-black text-sm font-bold hover:bg-white/90 transition-all" disabled={loading || !email || !password || !confirmPassword}>
+                  <Button type="submit" className="w-full h-14 rounded-xl bg-gradient-to-r from-accent to-[#ffd700] text-black font-black uppercase tracking-widest text-[10px] italic shadow-[0_8px_20px_rgba(255,122,26,0.2)] hover:shadow-[0_8px_25px_rgba(255,122,26,0.4)] transition-all hover:scale-[1.01] active:scale-[0.99] border border-accent/20 flex items-center justify-center" disabled={loading || !email || !password || !confirmPassword}>
                     {loading ? <Loader2 className="h-5 w-5 animate-spin text-black" /> : "Create account"}
                   </Button>
                 </form>
 
-                <div className="text-center text-sm">
+                <div className="text-center text-xs font-bold tracking-wider uppercase">
                   <p className="text-white/40">
                     Already have an account?{" "}
-                    <Link href="/login" className="text-white hover:underline font-medium ml-1">Log in</Link>
+                    <Link href="/login" className="text-white hover:underline font-bold ml-1">Log in</Link>
                   </p>
                 </div>
 
                 <div className="relative py-2">
                   <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-[#1E1E1E]"></div>
+                    <div className="w-full border-t border-white/5"></div>
                   </div>
-                  <div className="relative flex justify-center text-xs uppercase">
+                  <div className="relative flex justify-center text-[10px] uppercase font-black tracking-widest">
                     <span className="bg-[#030303] px-4 text-white/30 tracking-widest">or</span>
                   </div>
                 </div>
 
                 <div className="space-y-4">
-                  <Button onClick={() => setMethod("otp")} variant="outline" className="w-full h-14 rounded-xl border-[#1E1E1E] bg-transparent text-sm font-medium text-white/80 hover:bg-[#111111] hover:text-white transition-all justify-center" disabled={loading}>
+                  <Button onClick={() => setMethod("otp")} variant="outline" className="w-full h-14 rounded-xl bg-gradient-to-b from-[#121212] to-[#080808] border border-white/5 shadow-[6px_6px_16px_rgba(0,0,0,0.8),-3px_-3px_12px_rgba(255,255,255,0.012),inset_0_1px_0_rgba(255,255,255,0.03)] hover:border-white/10 hover:scale-[1.01] transition-all text-white font-bold uppercase tracking-widest text-[9px] italic flex items-center justify-center" disabled={loading}>
                     Use sign-up code instead
                   </Button>
-                  <Button onClick={handleGoogleLogin} variant="outline" className="w-full h-14 rounded-xl border-[#1E1E1E] bg-transparent text-sm font-medium text-white/80 hover:bg-[#111111] hover:text-white transition-all justify-center" disabled={loading}>
+                  <Button onClick={handleGoogleLogin} variant="outline" className="w-full h-14 rounded-xl bg-gradient-to-b from-[#121212] to-[#080808] border border-white/5 shadow-[6px_6px_16px_rgba(0,0,0,0.8),-3px_-3px_12px_rgba(255,255,255,0.012),inset_0_1px_0_rgba(255,255,255,0.03)] hover:border-white/10 hover:scale-[1.01] transition-all text-white font-bold uppercase tracking-widest text-[9px] italic flex items-center justify-center" disabled={loading}>
                     <Image src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width={18} height={18} className="mr-3" unoptimized />
                     Continue with Google
                   </Button>

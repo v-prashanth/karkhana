@@ -437,3 +437,37 @@ export interface ContactLedger {
   invoices: Invoice[];
   payments: Payment[];
 }
+
+// ============================================
+// Targets & Milestones Types
+// ============================================
+
+export interface BusinessTarget {
+  id: string;
+  organization_id: string;
+  target_type: 'revenue' | 'collections' | 'production';
+  period_type: 'annual';
+  annual_amount: number;
+  monthly_amount: number;
+  financial_year: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TargetProgress {
+  current: number;
+  target: number;
+  percentage: number;
+  projected: number;
+  daysElapsed: number;
+  daysRemaining: number;
+  streak: number;
+  monthlyHistory: {
+    month: string;
+    achieved: number;
+    target: number;
+    percentage: number;
+  }[];
+}
+

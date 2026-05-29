@@ -22,18 +22,20 @@ type EmployeePortalPayload = {
 
 export default function EmployeePortalPage() {
   const router = useRouter();
-  const { user, organization, logout } = useStore();
+  const { user, organization, logout, authHydrated } = useStore();
+
+  const handleLogout = async () => {
+    logout();
+    router.push("/");
+  };
 
   useEffect(() => {
-    if (!user) {
-      router.push("/");
-      return;
+    if (authHydrated && user) {
+      if (user.role !== "worker" && user.role !== "viewer") {
+        router.push("/home");
+      }
     }
-
-    if (user.role !== "worker" && user.role !== "viewer") {
-      router.push("/home");
-    }
-  }, [router, user]);
+  }, [router, user, authHydrated]);
 
   const { data } = useQuery<EmployeePortalPayload>({
     queryKey: ["employee-portal"],
@@ -46,14 +48,56 @@ export default function EmployeePortalPage() {
     },
   });
 
+  if (!authHydrated) {
+    return (
+      <main className="min-h-screen space-y-6 bg-[#040404] p-5">
+        <div className="h-12 w-48 animate-pulse rounded-lg bg-white/5" />
+        <div className="grid grid-cols-2 gap-3">
+          <div className="h-24 animate-pulse rounded-2xl bg-white/5" />
+          <div className="h-24 animate-pulse rounded-2xl bg-white/5" />
+        </div>
+      </main>
+    );
+  }
+
+  if (authHydrated && !user) {
+    return (
+      <main className="min-h-screen flex items-center justify-center bg-[#040404] p-5">
+        <div className="w-full max-w-md p-8 rounded-[2rem] border border-white/5 bg-gradient-to-br from-[#101010] to-[#060606] shadow-[6px_6px_16px_rgba(0,0,0,0.8),-3px_-3px_12px_rgba(255,255,255,0.012)] text-center space-y-6">
+          <div className="flex justify-center">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-red-500/10 text-red-500 border border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.15)]">
+              <ShieldCheck className="h-8 w-8" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-xl font-bold tracking-tight text-white uppercase italic">Connection Issue</h2>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              We couldn't load your Karkhana employee profile. This usually happens if your connection is unstable or the database is undergoing maintenance.
+            </p>
+          </div>
+          <div className="pt-2 flex flex-col gap-3">
+            <Button 
+              onClick={() => window.location.reload()}
+              className="w-full h-12 rounded-xl bg-white text-black font-bold uppercase tracking-widest text-[10px] italic hover:bg-white/90"
+            >
+              Retry Sync
+            </Button>
+            <Button 
+              variant="outline"
+              onClick={handleLogout}
+              className="w-full h-12 rounded-xl border-white/10 bg-transparent text-white font-medium hover:bg-white/5"
+            >
+              Log Out
+            </Button>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   if (!user || (user.role !== "worker" && user.role !== "viewer")) {
     return null;
   }
-
-  const handleLogout = async () => {
-    logout();
-    router.push("/");
-  };
 
   const attendance = data?.attendance || [];
   const salarySnapshot = data?.salarySnapshot;

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowRight, ShieldCheck } from "lucide-react";
+import { ArrowRight, ShieldCheck, Users, BriefcaseBusiness, FileText, Building2 } from "lucide-react";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export default async function HomePage() {
@@ -10,31 +10,55 @@ export default async function HomePage() {
   } = await supabase.auth.getSession();
 
   if (session) {
-    redirect("/home");
+    const { data: profile } = await supabase
+      .from("users")
+      .select("id")
+      .eq("id", session.user.id)
+      .maybeSingle();
+
+    if (profile) {
+      redirect("/home");
+    }
   }
 
   return (
-    <main className="min-h-screen bg-background px-5 py-10 text-foreground">
-      <div className="mx-auto flex min-h-[85vh] max-w-2xl flex-col justify-center">
+    <main className="min-h-screen bg-[#040404] px-5 py-12 text-foreground relative overflow-hidden flex flex-col justify-center">
+      {/* Premium ambient glow background */}
+      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] rounded-full bg-accent/5 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] rounded-full bg-yellow-500/[0.015] blur-[150px] pointer-events-none" />
+
+      <div className="mx-auto w-full max-w-2xl z-10 space-y-12">
+        {/* Brand Header */}
+        <div className="flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#1c1a17] to-[#0e0d0c] border border-accent/20 text-accent shadow-[0_8px_20px_rgba(255,122,26,0.15),inset_0_1px_0_rgba(255,255,255,0.03)]">
+            <Building2 className="h-5.5 w-5.5" />
+          </div>
+          <div>
+            <span className="text-lg font-black uppercase tracking-[0.25em] text-white italic">Karkhana</span>
+            <p className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground">The Industrial System</p>
+          </div>
+        </div>
+
         <div className="space-y-6">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-[10px] font-black uppercase tracking-[0.28em] text-muted-foreground">
-            <ShieldCheck className="h-4 w-4 text-accent" />
-            Built for Indian SMBs
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/5 bg-[#101010] px-4 py-2 text-[9px] font-black uppercase tracking-[0.25em] text-accent/90 shadow-[inset_2px_2px_6px_rgba(0,0,0,0.8)]">
+            <ShieldCheck className="h-4 w-4 text-accent animate-pulse" />
+            Built for Indian SMBs & Factories
           </div>
 
-          <h1 className="text-4xl font-black uppercase italic tracking-tight text-white sm:text-5xl">
-            Run your business like a system.
+          <h1 className="text-4xl font-black uppercase italic leading-[1.1] tracking-tight sm:text-6.5xl">
+            <span className="bg-gradient-to-r from-white via-white to-[#a6a6a6] bg-clip-text text-transparent">Run your business</span>
+            <br />
+            <span className="bg-gradient-to-r from-[#ffd700] via-accent to-accent bg-clip-text text-transparent">like a system.</span>
           </h1>
 
-          <p className="max-w-xl text-sm leading-6 text-muted-foreground">
-            Karkhana replaces registers, loose paper, and WhatsApp confusion with a simple workspace for contacts, work,
-            bills, payments, and expenses.
+          <p className="max-w-xl text-sm leading-7 text-muted-foreground/85 font-light">
+            Karkhana replaces registers, loose paper, and WhatsApp confusion with a single premium workspace for contacts, work orders, bills, and payments.
           </p>
 
-          <div className="flex flex-col gap-3 sm:flex-row">
+          <div className="flex flex-col gap-4 pt-4 sm:flex-row">
             <Link
               href="/login"
-              className="inline-flex h-12 items-center justify-center rounded-2xl bg-accent px-6 text-[11px] font-black uppercase tracking-widest italic text-black"
+              className="inline-flex h-14 items-center justify-center rounded-2xl bg-gradient-to-r from-accent to-[#ffd700] px-8 text-[11px] font-black uppercase tracking-widest italic text-black shadow-[0_8px_25px_rgba(255,122,26,0.3)] transition-all hover:scale-[1.02] hover:shadow-[0_8px_30px_rgba(255,122,26,0.55)] active:scale-[0.98] border border-accent/25"
             >
               Get started
               <ArrowRight className="ml-2 h-4 w-4" />
@@ -42,38 +66,53 @@ export default async function HomePage() {
 
             <Link
               href="/login"
-              className="inline-flex h-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.02] px-6 text-[11px] font-black uppercase tracking-widest italic text-white hover:bg-white/[0.04]"
+              className="inline-flex h-14 items-center justify-center rounded-2xl bg-gradient-to-b from-[#101010] to-[#070707] border border-white/5 px-8 text-[11px] font-black uppercase tracking-widest italic text-white shadow-[6px_6px_16px_rgba(0,0,0,0.8),-3px_-3px_12px_rgba(255,255,255,0.012),inset_0_1px_0_rgba(255,255,255,0.03)] hover:border-white/10 hover:scale-[1.02] transition-all active:scale-[0.98]"
             >
               Sign in
             </Link>
           </div>
 
-          <div className="grid gap-3 pt-6 sm:grid-cols-3">
+          {/* Neumorphic Feature Cards */}
+          <div className="grid gap-4 pt-8 sm:grid-cols-3">
             {[
-              { title: "Contacts", body: "Clients and suppliers in one place." },
-              { title: "Work", body: "Track jobs, tickets, or projects." },
-              { title: "Bills", body: "Create, share, and record payments." },
-            ].map((item) => (
-              <div
-                key={item.title}
-                className="rounded-2xl border border-white/5 bg-white/[0.02] p-4"
-              >
-                <p className="text-[10px] font-black uppercase tracking-[0.28em] text-[#777]">{item.title}</p>
-                <p className="mt-2 text-sm font-semibold text-white">{item.body}</p>
-              </div>
-            ))}
+              { title: "Contacts", body: "Clients & suppliers details in one safe place.", icon: Users },
+              { title: "Work", body: "Track jobs, tickets, and production orders.", icon: BriefcaseBusiness },
+              { title: "Bills", body: "Create GST invoices, share, and track payments.", icon: FileText },
+            ].map((item) => {
+              const Icon = item.icon;
+              return (
+                <div
+                  key={item.title}
+                  className="rounded-2xl border border-white/5 bg-gradient-to-br from-[#101010] to-[#060606] p-5 shadow-[6px_6px_16px_rgba(0,0,0,0.8),-3px_-3px_12px_rgba(255,255,255,0.012),inset_0_1px_0_rgba(255,255,255,0.03)] space-y-4 hover:border-accent/15 transition-colors group"
+                >
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/5 text-accent border border-accent/10 shadow-[inset_1px_1px_3px_rgba(255,122,26,0.15)] group-hover:bg-accent/10 transition-colors">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground/60">{item.title}</p>
+                    <p className="mt-2 text-xs font-medium text-white/80 leading-relaxed">{item.body}</p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
-          <div className="pt-10 text-[10px] font-black uppercase tracking-[0.28em] text-[#555]">
-            By continuing, you agree to our{" "}
-            <Link className="text-accent hover:underline" href="/privacy">
-              Privacy Policy
-            </Link>{" "}
-            and{" "}
-            <Link className="text-accent hover:underline" href="/network-terms">
-              Network Terms
-            </Link>
-            .
+          {/* Trust Footer */}
+          <div className="pt-12 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-white/5 text-[9px] font-bold uppercase tracking-[0.25em] text-[#444]">
+            <div>
+              By continuing, you agree to our{" "}
+              <Link className="text-accent/60 hover:text-accent transition-colors underline" href="/privacy">
+                Privacy
+              </Link>{" "}
+              &{" "}
+              <Link className="text-accent/60 hover:text-accent transition-colors underline" href="/network-terms">
+                Terms
+              </Link>
+            </div>
+            <div className="text-[#555] flex items-center gap-1.5">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+              Secure SMB Portal
+            </div>
           </div>
         </div>
       </div>

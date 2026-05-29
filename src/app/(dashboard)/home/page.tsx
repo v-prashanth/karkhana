@@ -35,6 +35,8 @@ import { useToast } from "@/components/ui/Toaster";
 import { generatePaymentReminderWhatsAppMessage, generateWhatsAppLink } from "@/lib/utils/whatsapp";
 import type { DashboardMetrics, Invoice } from "@/types/database";
 
+import { TargetProgressCard } from "@/components/targets/TargetProgressCard";
+
 export default function DashboardPage() {
   const router = useRouter();
   const { user, organization, logout, authHydrated } = useStore();
@@ -53,12 +55,8 @@ export default function DashboardPage() {
       return () => clearTimeout(timeout);
     }
 
-    if (!user) {
-      router.push("/");
-    } else {
-      setMounted(true);
-    }
-  }, [authHydrated, user, organization, router]);
+    setMounted(true);
+  }, [authHydrated]);
 
   const { data: metrics } = useQuery<DashboardMetrics>({
     queryKey: ["dashboard-metrics", organization?.id],
@@ -108,18 +106,6 @@ export default function DashboardPage() {
     }
   };
 
-  if (!mounted) {
-    return (
-      <main className="min-h-screen space-y-6 bg-background p-5">
-        <div className="h-12 w-48 animate-pulse rounded-lg bg-white/5" />
-        <div className="grid grid-cols-2 gap-3">
-          <div className="h-24 animate-pulse rounded-2xl bg-white/5" />
-          <div className="h-24 animate-pulse rounded-2xl bg-white/5" />
-        </div>
-      </main>
-    );
-  }
-
   const handleLogout = async () => {
     if (!window.confirm("Log out of Karkhana?")) {
       return;
@@ -134,6 +120,53 @@ export default function DashboardPage() {
       router.push("/");
     }
   };
+
+  if (!mounted) {
+    return (
+      <main className="min-h-screen space-y-6 bg-background p-5">
+        <div className="h-12 w-48 animate-pulse rounded-lg bg-white/5" />
+        <div className="grid grid-cols-2 gap-3">
+          <div className="h-24 animate-pulse rounded-2xl bg-white/5" />
+          <div className="h-24 animate-pulse rounded-2xl bg-white/5" />
+        </div>
+      </main>
+    );
+  }
+
+  if (authHydrated && !user) {
+    return (
+      <main className="min-h-screen flex items-center justify-center bg-[#040404] p-5">
+        <div className="w-full max-w-md p-8 rounded-[2rem] border border-white/5 bg-gradient-to-br from-[#101010] to-[#060606] shadow-[6px_6px_16px_rgba(0,0,0,0.8),-3px_-3px_12px_rgba(255,255,255,0.012)] text-center space-y-6">
+          <div className="flex justify-center">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-red-500/10 text-red-500 border border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.15)]">
+              <ShieldCheck className="h-8 w-8" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-xl font-bold tracking-tight text-white uppercase italic">Connection Issue</h2>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              We couldn't load your Karkhana organization profile. This usually happens if your connection is unstable or the database is undergoing maintenance.
+            </p>
+          </div>
+          <div className="pt-2 flex flex-col gap-3">
+            <Button 
+              onClick={() => window.location.reload()}
+              className="w-full h-12 rounded-xl bg-white text-black font-bold uppercase tracking-widest text-[10px] italic hover:bg-white/90"
+            >
+              Retry Sync
+            </Button>
+            <Button 
+              variant="outline"
+              onClick={handleLogout}
+              className="w-full h-12 rounded-xl border-white/10 bg-transparent text-white font-medium hover:bg-white/5"
+            >
+              Log Out
+            </Button>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   const stats = [
     {
@@ -233,6 +266,8 @@ export default function DashboardPage() {
       )}
 
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="relative z-10 space-y-6 p-5 xl:space-y-8 xl:p-8">
+        <TargetProgressCard />
+
         <section className="grid gap-3 xl:grid-cols-[minmax(0,1.5fr)_minmax(320px,0.8fr)]">
           <Card className="glass-panel overflow-hidden relative">
             <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
