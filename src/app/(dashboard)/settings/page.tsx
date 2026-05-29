@@ -116,8 +116,8 @@ export default function SettingsPage() {
     <main className="min-h-screen bg-background pb-24">
       <PageHeader title="Settings" subtitle="Manage your workspace" />
 
-      {/* Tab Bar */}
-      <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-xl border-b border-white/5">
+      {/* Tab Bar (Non-sticky to align naturally under sticky PageHeader) */}
+      <div className="border-b border-white/5 bg-background/40">
         <div className="flex gap-1 px-5 xl:px-8 py-2 overflow-x-auto no-scrollbar">
           {tabs.map((tab) => (
             <button

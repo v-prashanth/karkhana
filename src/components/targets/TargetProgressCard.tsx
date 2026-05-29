@@ -1,15 +1,16 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { TrendingUp, Wallet, Flame, Plus, CheckCircle, BarChart3, Edit3 } from "lucide-react";
+import { TrendingUp, Wallet, Flame, Plus, CheckCircle, BarChart3, Edit3, ArrowRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { targetsApi } from "@/lib/api/targets";
 import { TargetSetupModal } from "./TargetSetupModal";
 import { motion, AnimatePresence } from "framer-motion";
 
-export function TargetProgressCard() {
+export function TargetProgressCard({ minimal = false }: { minimal?: boolean }) {
   const [selectedType, setSelectedType] = useState<"revenue" | "collections" | "production">("revenue");
   const [isSetupOpen, setIsSetupOpen] = useState(false);
   const queryClient = useQueryClient();
@@ -70,6 +71,103 @@ export function TargetProgressCard() {
   const circumference = 2 * Math.PI * radius;
   const percentage = progress?.hasTarget ? Math.min(100, Math.max(0, progress.percentage)) : 0;
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
+
+  if (minimal) {
+    const miniRadius = 16;
+    const miniStrokeWidth = 4;
+    const miniCircumference = 2 * Math.PI * miniRadius;
+    const miniStrokeDashoffset = miniCircumference - (percentage / 100) * miniCircumference;
+
+    return (
+      <Link href="/costing" className="block w-full active:scale-[0.99] transition-transform">
+        <Card className="glass-panel overflow-hidden border border-white/5 bg-[#090909] hover:bg-white/[0.03] transition-colors relative">
+          <CardContent className="p-4 flex items-center justify-between gap-4">
+            {isLoadingTargets || isLoadingProgress ? (
+              <div className="flex w-full items-center justify-center py-2">
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-accent border-t-transparent" />
+              </div>
+            ) : !progress?.hasTarget ? (
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center gap-2">
+                  <div className="h-2 w-2 rounded-full bg-accent animate-pulse" />
+                  <span className="text-[10px] font-black uppercase tracking-wider text-white">
+                    Set up your first business goal
+                  </span>
+                </div>
+                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center gap-3 min-w-0">
+                  {/* Small Circular Progress Ring */}
+                  <div className="relative shrink-0 flex items-center justify-center">
+                    <svg width="44" height="44" className="transform -rotate-90">
+                      <circle
+                        cx="22"
+                        cy="22"
+                        r={miniRadius}
+                        className="stroke-[#030303]"
+                        strokeWidth={miniStrokeWidth}
+                        fill="transparent"
+                      />
+                      <circle
+                        cx="22"
+                        cy="22"
+                        r={miniRadius}
+                        className="stroke-white/[0.02]"
+                        strokeWidth={miniStrokeWidth}
+                        fill="transparent"
+                      />
+                      <circle
+                        cx="22"
+                        cy="22"
+                        r={miniRadius}
+                        stroke="url(#goldGradientMini)"
+                        strokeWidth={miniStrokeWidth}
+                        strokeDasharray={miniCircumference}
+                        strokeDashoffset={miniStrokeDashoffset}
+                        strokeLinecap="round"
+                        fill="transparent"
+                      />
+                      <defs>
+                        <linearGradient id="goldGradientMini" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#c5a880" />
+                          <stop offset="50%" stopColor="#d4af37" />
+                          <stop offset="100%" stopColor="#f3e5ab" />
+                        </linearGradient>
+                      </defs>
+                    </svg>
+                    <span className="absolute text-[8px] font-black text-white italic">
+                      {progress.percentage}%
+                    </span>
+                  </div>
+
+                  {/* High level metrics */}
+                  <div className="min-w-0 text-left">
+                    <span className="text-[8px] font-bold text-accent uppercase tracking-widest block leading-none mb-1">
+                      {selectedType} target goal
+                    </span>
+                    <p className="text-xs font-bold text-white truncate max-w-[220px]">
+                      {formatCurrency(progress.current)} of {formatCurrency(progress.monthlyTarget)} achieved
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 text-muted-foreground hover:text-white shrink-0">
+                  {progress.streak > 0 && (
+                    <span className="text-[9px] font-bold text-orange-500 flex items-center gap-0.5 bg-orange-500/10 px-2 py-0.5 rounded-full">
+                      🔥 {progress.streak}m
+                    </span>
+                  )}
+                  <ArrowRight className="h-4 w-4" />
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+      </Link>
+    );
+  }
 
   return (
     <div className="space-y-4">
