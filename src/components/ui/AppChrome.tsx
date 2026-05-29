@@ -37,6 +37,7 @@ const primaryLinks = [
 
 const secondaryLinks = [
   { href: "/network", label: "Vendor Network", icon: Network, allowedRoles: ["owner", "accountant", "manager"] },
+  { href: "/costing", label: "Costing & Margins", icon: BarChart3, allowedRoles: ["owner", "manager", "accountant"] },
   { href: "/invoices/new", label: "New Bill", icon: FileText, allowedRoles: ["owner", "accountant"] },
   { href: "/expenses/new", label: "Log Expense", icon: Receipt, allowedRoles: ["owner", "accountant", "manager"] },
   { href: "/settings", label: "Settings", icon: Settings, allowedRoles: ["owner", "accountant", "manager", "viewer"] },

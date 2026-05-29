@@ -471,3 +471,41 @@ export interface TargetProgress {
   }[];
 }
 
+// ============================================
+// Costing & Margins Types
+// ============================================
+
+export interface OrderCost {
+  id: string;
+  organization_id: string;
+  order_id: string;
+  cost_category: 'material' | 'labor' | 'outsourcing' | 'other';
+  description: string;
+  amount: number;
+  staff_id: string | null;
+  supplier_id: string | null;
+  created_at: string;
+  updated_at: string;
+  staff?: { name: string };
+  supplier?: { name: string };
+  order?: { description: string; order_number: string | null };
+}
+
+export interface JobMarginSummary {
+  orderId: string;
+  description: string;
+  orderNumber: string | null;
+  clientName: string;
+  status: string;
+  sellingPrice: number; // estimated_cost or actual invoices sum
+  materialCost: number;
+  laborCost: number;
+  outsourcingCost: number;
+  otherCost: number;
+  totalCost: number;
+  profit: number;
+  marginPercentage: number;
+  created_at: string;
+}
+
+
