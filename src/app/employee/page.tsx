@@ -72,7 +72,7 @@ export default function EmployeePortalPage() {
           <div className="space-y-2">
             <h2 className="text-xl font-bold tracking-tight text-white uppercase italic">Connection Issue</h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              We couldn't load your Karkhana employee profile. This usually happens if your connection is unstable or the database is undergoing maintenance.
+              We couldn&apos;t load your Karkhana employee profile. This usually happens if your connection is unstable or the database is undergoing maintenance.
             </p>
           </div>
           <div className="pt-2 flex flex-col gap-3">

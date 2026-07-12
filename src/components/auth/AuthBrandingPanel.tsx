@@ -61,7 +61,7 @@ export function AuthBrandingPanel() {
             className="space-y-4"
           >
             <p className="text-3xl font-medium leading-tight text-white/90 italic">
-              "{testimonials[currentTestimonial].quote}"
+              &ldquo;{testimonials[currentTestimonial].quote}&rdquo;
             </p>
             <div>
               <p className="font-semibold text-white/70">{testimonials[currentTestimonial].author}</p>
