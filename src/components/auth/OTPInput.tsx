@@ -104,9 +104,10 @@ export function OTPInput({ length = 6, onComplete, disabled = false }: OTPInputP
           onKeyDown={(e) => handleKeyDown(e, index)}
           onPaste={handlePaste}
           disabled={disabled}
+          style={{ backgroundColor: digit ? "#161616" : "#101010", borderColor: digit ? "rgba(212, 175, 55, 0.6)" : "rgba(255, 255, 255, 0.15)" }}
           className={cn(
-            "w-12 h-14 sm:w-14 sm:h-16 text-center text-2xl font-semibold bg-[#111111] border border-[#1E1E1E] rounded-xl text-white transition-all",
-            "focus:border-accent focus:ring-1 focus:ring-accent focus:outline-none",
+            "w-11 h-14 sm:w-13 sm:h-16 text-center text-2xl font-black text-white rounded-xl transition-all shadow-[inset_2px_2px_6px_rgba(0,0,0,0.9)] border",
+            "focus:border-accent focus:ring-2 focus:ring-accent/40 focus:shadow-[0_0_12px_rgba(212,175,55,0.3)] focus:outline-none",
             disabled && "opacity-50 cursor-not-allowed"
           )}
         />

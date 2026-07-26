@@ -154,7 +154,8 @@ export default function ForgotPasswordPage() {
                       pattern="[0-9]*"
                       maxLength={6}
                       placeholder="000000"
-                      className="h-14 bg-[#111111] border-[#1E1E1E] focus:border-accent focus:ring-1 focus:ring-accent text-center tracking-[0.5em] text-xl font-bold text-white rounded-xl transition-all"
+                      style={{ backgroundColor: "#101010", borderColor: "rgba(255, 255, 255, 0.15)" }}
+                      className="h-14 border text-center tracking-[0.5em] text-xl font-bold text-white rounded-xl transition-all focus:border-accent focus:ring-2 focus:ring-accent/40"
                       value={code}
                       onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
                       required
