@@ -4,7 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { 
   BriefcaseBusiness, IndianRupee, LayoutDashboard, Users, Network, 
-  Menu, X, FileText, Settings, ShieldCheck, Inbox, Truck, Box, Package
+  Menu, X, FileText, Settings, ShieldCheck, Inbox, Truck, Box, Package,
+  BarChart3, Shield, MessageSquare
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -47,6 +48,9 @@ export function BottomNav() {
       { href: "/dc/outward", icon: Truck, label: "Outward DC", desc: "Outgoing dispatches", allowedRoles: ["owner", "manager", "viewer"] }
     ] : []),
     { href: "/invoices/new", icon: FileText, label: "New Bill", desc: "Generate a Tax Invoice", allowedRoles: ["owner", "accountant"] },
+    { href: "/costing", icon: BarChart3, label: "Costing & Margins", desc: "Production costs & margins", allowedRoles: ["owner", "manager", "accountant"] },
+    { href: "/leads", icon: MessageSquare, label: "Leads", desc: "Website lead enquiries", allowedRoles: ["owner", "manager", "viewer"] },
+    { href: "/warranty", icon: Shield, label: "Warranty Register", desc: "Manage client product warranties", allowedRoles: ["owner", "manager", "accountant", "viewer"] },
     { href: "/network", icon: BriefcaseBusiness, label: "Vendor Network", desc: "Manage your supply chain", allowedRoles: ["owner", "accountant", "manager"] },
     { href: "/network/inbox", icon: Inbox, label: "PO Inbox", desc: "Received purchase orders", allowedRoles: ["owner", "accountant", "manager"] },
     { href: "/staff", icon: ShieldCheck, label: "Staff", desc: "Users and roles", allowedRoles: ["owner", "manager", "accountant", "viewer"] },

@@ -91,3 +91,6 @@ export const getOrganizationId = async (): Promise<string | null> => {
 
   return data?.organization_id ?? null;
 };
+
+export { createServerSupabaseClient as createClient };
+

@@ -19,7 +19,7 @@ import {
   Printer,
   Briefcase,
   Sparkles,
-  X,
+  Loader2
 } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
@@ -28,6 +28,8 @@ import { useStore } from "@/store/useStore";
 import { useToast } from "@/components/ui/Toaster";
 import { organizationApi } from "@/lib/api/organization";
 import { cn } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/client";
+import { BUSINESS_TYPES as SPECIALIZED_BUSINESS_TYPES, getBusinessType } from "@/lib/business-types";
 
 const BUSINESS_TYPES = [
   { id: "manufacturing", label: "Manufacturing", icon: Factory, desc: "CNC, Fabrication, Job Shop" },
@@ -45,6 +47,14 @@ const CAPABILITY_SUGGESTIONS: Record<string, string[]> = {
   printing: ["Offset Printing", "Digital Printing", "Screen Printing", "Packaging", "Label Printing"],
   services: ["Consulting", "IT Services", "Design", "Installation", "Maintenance"],
   custom: ["Logistics", "Transport", "Warehousing", "Courier", "Cold Storage"],
+  // Specialized business types
+  water_heating: ["Geysers", "Heat Pumps", "Solar Heaters", "Plumbing", "Water Treatment", "Pressure Pumps", "Maintenance Services"],
+  solar: ["Solar Panels", "Solar Inverters", "Battery Storage", "Net Metering", "Solar Pumps", "Annual Maintenance"],
+  hvac: ["AC Installation", "Split AC", "Cassette AC", "Ducting", "VRF Systems", "Chillers", "Routine Service", "Gas Charging"],
+  interior: ["Space Planning", "Modular Kitchen", "Wardrobes", "Civil Work", "False Ceiling", "Electrical Work", "Painting", "Woodwork"],
+  machine_shop: ["CNC Turning", "Milling", "VMC Machining", "Sheet Metal", "Welding", "Fabrication", "Surface Grinding", "Quality Inspection"],
+  electrical: ["House Wiring", "Industrial Wiring", "LT Panels", "Earthing", "Lighting Control", "UPS Systems", "DB Dressing"],
+  generic_service: ["Installation", "Maintenance", "Consulting", "Repair", "Fabrication", "Assembly"],
 };
 
 const EMPLOYEE_RANGES = ["1-5", "6-15", "16-50", "51-200", "200+"];
@@ -53,7 +63,11 @@ export default function SetupWizardPage() {
   const router = useRouter();
   const { organization, setOrganization } = useStore();
   const { toast } = useToast();
+  const supabase = createClient();
+
   const [step, setStep] = useState(1);
+  const [selectedSpecType, setSelectedSpecType] = useState<string>("generic_service");
+  const [isSavingStep1, setIsSavingStep1] = useState(false);
 
   const [form, setForm] = useState({
     name: "",
@@ -62,7 +76,7 @@ export default function SetupWizardPage() {
     email: "",
     address: "",
     gstin: "",
-    business_type: "manufacturing",
+    business_type: "generic_service",
     tagline: "",
     capabilities: [] as string[],
     year_established: "",
@@ -72,6 +86,8 @@ export default function SetupWizardPage() {
   // Pre-fill from existing org data
   useEffect(() => {
     if (!organization) return;
+    const dbType = organization.business_type || "generic_service";
+    setSelectedSpecType(dbType);
     setForm((prev) => ({
       ...prev,
       name: organization.name === "My Business" ? "" : organization.name || "",
@@ -80,7 +96,7 @@ export default function SetupWizardPage() {
       email: organization.email || "",
       address: organization.address || "",
       gstin: organization.gstin || "",
-      business_type: organization.business_type || "manufacturing",
+      business_type: dbType,
       tagline: organization.tagline || "",
       capabilities: organization.capabilities || [],
       year_established: organization.year_established?.toString() || "",
@@ -113,7 +129,34 @@ export default function SetupWizardPage() {
     }));
   };
 
-  const totalSteps = 3;
+  // Step 1 Submit (Save specialized business type)
+  const handleStep1Submit = async () => {
+    if (!organization?.id) {
+      toast("Workspace session missing", "error");
+      return;
+    }
+    setIsSavingStep1(true);
+    try {
+      const { error } = await supabase
+        .from("organizations")
+        .update({ business_type: selectedSpecType })
+        .eq("id", organization.id);
+
+      if (error) throw error;
+      
+      // Sync local form state and Zustand organization store
+      setForm(prev => ({ ...prev, business_type: selectedSpecType }));
+      setOrganization({ ...organization, business_type: selectedSpecType as any });
+
+      setStep(2);
+    } catch (err: any) {
+      toast(err.message || "Failed to save business category", "error");
+    } finally {
+      setIsSavingStep1(false);
+    }
+  };
+
+  const totalSteps = 4;
   const progress = (step / totalSteps) * 100;
 
   return (
@@ -144,15 +187,91 @@ export default function SetupWizardPage() {
             Set Up Your Business
           </h1>
           <p className="text-sm text-muted-foreground mt-2">
-            Step {step} of {totalSteps} — {step === 1 ? "Identity" : step === 2 ? "Industry" : "Finish"}
+            Step {step} of {totalSteps} — {step === 1 ? "Business Type" : step === 2 ? "Identity" : step === 3 ? "Industry" : "Finish"}
           </p>
         </div>
 
         <AnimatePresence mode="wait">
-          {/* STEP 1: Business Identity */}
+          {/* STEP 1: Specialized Business Type Grid */}
           {step === 1 && (
             <motion.div
               key="step1"
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -30 }}
+              className="space-y-5"
+            >
+              <Card className="border-white/5 bg-white/[0.02]">
+                <CardContent className="p-6 space-y-6">
+                  <div>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-[#888] mb-3 block">
+                      What kind of business are you?
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {SPECIALIZED_BUSINESS_TYPES.map((bt) => (
+                        <button
+                          type="button"
+                          key={bt.id}
+                          onClick={() => setSelectedSpecType(bt.id)}
+                          className={cn(
+                            "p-4 rounded-2xl border text-left transition-all flex items-start gap-3",
+                            selectedSpecType === bt.id
+                              ? "border-accent bg-accent/10 text-accent"
+                              : "border-white/5 bg-white/[0.01] text-muted-foreground hover:bg-white/[0.03]"
+                          )}
+                        >
+                          <span className="text-2xl mt-0.5">{bt.icon}</span>
+                          <div>
+                            <p className="text-sm font-bold text-white">{bt.label}</p>
+                            <p className="text-[10px] opacity-60 mt-0.5">{bt.description}</p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Modules listing */}
+                  {selectedSpecType && (
+                    <div className="p-4 rounded-2xl border border-accent/20 bg-accent/[0.02] space-y-3">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-accent">Your workspace will include:</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {getBusinessType(selectedSpecType as any).modules.map((mod) => (
+                          <span key={mod} className="px-2 py-0.5 rounded-full bg-accent/10 text-[9px] font-black uppercase tracking-wider text-accent border border-accent/20">
+                            {mod.replace("_", " ")}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="pt-2 border-t border-white/5 text-[10px] text-muted-foreground">
+                        <span className="font-bold text-white uppercase tracking-wider">Workflow:</span> {getBusinessType(selectedSpecType as any).primaryWorkflow}
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Button
+                onClick={handleStep1Submit}
+                disabled={isSavingStep1 || !selectedSpecType}
+                className="w-full h-14 rounded-2xl bg-accent text-white font-black uppercase tracking-widest text-xs flex items-center justify-center gap-2"
+              >
+                {isSavingStep1 ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    Continue <ArrowRight className="h-4 w-4" />
+                  </>
+                )}
+              </Button>
+            </motion.div>
+          )}
+
+          {/* STEP 2: Business Identity (Old Step 1) */}
+          {step === 2 && (
+            <motion.div
+              key="step2"
               initial={{ opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -30 }}
@@ -237,20 +356,29 @@ export default function SetupWizardPage() {
                 </CardContent>
               </Card>
 
-              <Button
-                onClick={() => setStep(2)}
-                disabled={!form.name || !form.owner_name}
-                className="w-full h-14 rounded-2xl bg-accent text-white font-black uppercase tracking-widest text-xs"
-              >
-                Next: Your Industry <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
+              <div className="flex gap-3">
+                <Button
+                  onClick={() => setStep(1)}
+                  variant="outline"
+                  className="flex-1 h-14 rounded-2xl border-white/10 uppercase text-xs font-black tracking-widest"
+                >
+                  <ArrowLeft className="mr-2 h-4 w-4" /> Back
+                </Button>
+                <Button
+                  onClick={() => setStep(3)}
+                  disabled={!form.name || !form.owner_name}
+                  className="flex-[2] h-14 rounded-2xl bg-accent text-white font-black uppercase tracking-widest text-xs"
+                >
+                  Next: Your Industry <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
             </motion.div>
           )}
 
-          {/* STEP 2: Industry & Capabilities */}
-          {step === 2 && (
+          {/* STEP 3: Industry & Capabilities (Old Step 2) */}
+          {step === 3 && (
             <motion.div
-              key="step2"
+              key="step3"
               initial={{ opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -30 }}
@@ -265,6 +393,7 @@ export default function SetupWizardPage() {
                     <div className="grid grid-cols-2 gap-3">
                       {BUSINESS_TYPES.map((bt) => (
                         <button
+                          type="button"
                           key={bt.id}
                           onClick={() => setForm((p) => ({ ...p, business_type: bt.id, capabilities: [] }))}
                           className={cn(
@@ -289,6 +418,7 @@ export default function SetupWizardPage() {
                     <div className="flex flex-wrap gap-2">
                       {(CAPABILITY_SUGGESTIONS[form.business_type] || []).map((cap) => (
                         <button
+                          type="button"
                           key={cap}
                           onClick={() => toggleCapability(cap)}
                           className={cn(
@@ -320,14 +450,14 @@ export default function SetupWizardPage() {
 
               <div className="flex gap-3">
                 <Button
-                  onClick={() => setStep(1)}
+                  onClick={() => setStep(2)}
                   variant="outline"
                   className="flex-1 h-14 rounded-2xl border-white/10 uppercase text-xs font-black tracking-widest"
                 >
                   <ArrowLeft className="mr-2 h-4 w-4" /> Back
                 </Button>
                 <Button
-                  onClick={() => setStep(3)}
+                  onClick={() => setStep(4)}
                   className="flex-[2] h-14 rounded-2xl bg-accent text-white font-black uppercase tracking-widest text-xs"
                 >
                   Next: Final Details <ArrowRight className="ml-2 h-4 w-4" />
@@ -336,10 +466,10 @@ export default function SetupWizardPage() {
             </motion.div>
           )}
 
-          {/* STEP 3: Final Details & Save */}
-          {step === 3 && (
+          {/* STEP 4: Final Details & Save (Old Step 3) */}
+          {step === 4 && (
             <motion.div
-              key="step3"
+              key="step4"
               initial={{ opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -30 }}
@@ -366,6 +496,7 @@ export default function SetupWizardPage() {
                       <div className="flex flex-wrap gap-2">
                         {EMPLOYEE_RANGES.map((range) => (
                           <button
+                            type="button"
                             key={range}
                             onClick={() => setForm((p) => ({ ...p, employee_count: range }))}
                             className={cn(
@@ -414,7 +545,7 @@ export default function SetupWizardPage() {
 
               <div className="flex gap-3">
                 <Button
-                  onClick={() => setStep(2)}
+                  onClick={() => setStep(3)}
                   variant="outline"
                   className="flex-1 h-14 rounded-2xl border-white/10 uppercase text-xs font-black tracking-widest"
                 >

@@ -74,18 +74,17 @@
     background-attachment: fixed;
   }
 
-  /* Global CRED Neumorphic Overrides for all Cards and Panels */
+  /* Global CRED Neumorphic Overrides for Cards and Panels (excluding buttons, links, and explicit backgrounds) */
   .bg-card, 
-  .rounded-2xl.border, 
-  .rounded-3xl.border,
-  .rounded-xl.border,
-  .border-white\/5 {
-    background: linear-gradient(145deg, #101010, #060606) !important;
-    border: 1px solid rgba(255, 255, 255, 0.03) !important;
+  div.rounded-2xl.border:not([class*="bg-"]):not([class*="from-"]), 
+  div.rounded-3xl.border:not([class*="bg-"]):not([class*="from-"]),
+  div.rounded-xl.border:not([class*="bg-"]):not([class*="from-"]) {
+    background: linear-gradient(145deg, #101010, #060606);
+    border: 1px solid rgba(255, 255, 255, 0.03);
     box-shadow: 
       6px 6px 16px rgba(0, 0, 0, 0.8), 
       -3px -3px 12px rgba(255, 255, 255, 0.012),
-      inset 0 1px 0 rgba(255, 255, 255, 0.03) !important;
+      inset 0 1px 0 rgba(255, 255, 255, 0.03);
   }
 
   /* Global CRED Neumorphic Insets for all inputs, textareas, and selects */

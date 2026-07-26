@@ -4,7 +4,7 @@
 -- Ensure the RLS helper function exists (defined in 00000 but may not be applied)
 CREATE OR REPLACE FUNCTION public.get_current_org_id()
 RETURNS uuid
-LANGUAGE sql STABLE
+LANGUAGE sql SECURITY DEFINER STABLE
 AS $$
   SELECT organization_id FROM public.users WHERE id = auth.uid();
 $$;

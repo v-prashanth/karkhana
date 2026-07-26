@@ -111,14 +111,8 @@ export default function LoginPage() {
     }
   };
 
-  const handleGoogleLogin = async () => {
-    setLoading(true);
-    try {
-      await authApi.signInWithGoogle();
-    } catch (error: any) {
-      toast(error.message || "Google login failed", "error");
-      setLoading(false);
-    }
+  const handleGoogleLogin = () => {
+    toast("Google sign-in is currently frozen. Please sign in with your email.", "error");
   };
 
   return (
@@ -186,9 +180,9 @@ export default function LoginPage() {
                   <Button onClick={() => setMethod("password")} variant="outline" className="w-full h-14 rounded-xl bg-gradient-to-b from-[#121212] to-[#080808] border border-white/5 shadow-[6px_6px_16px_rgba(0,0,0,0.8),-3px_-3px_12px_rgba(255,255,255,0.012),inset_0_1px_0_rgba(255,255,255,0.03)] hover:border-white/10 hover:scale-[1.01] transition-all text-white font-bold uppercase tracking-widest text-[9px] italic flex items-center justify-center" disabled={loading}>
                     Use password instead
                   </Button>
-                  <Button onClick={handleGoogleLogin} variant="outline" className="w-full h-14 rounded-xl bg-gradient-to-b from-[#121212] to-[#080808] border border-white/5 shadow-[6px_6px_16px_rgba(0,0,0,0.8),-3px_-3px_12px_rgba(255,255,255,0.012),inset_0_1px_0_rgba(255,255,255,0.03)] hover:border-white/10 hover:scale-[1.01] transition-all text-white font-bold uppercase tracking-widest text-[9px] italic flex items-center justify-center" disabled={loading}>
-                    <Image src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width={18} height={18} className="mr-3" unoptimized />
-                    Continue with Google
+                  <Button onClick={handleGoogleLogin} variant="outline" className="w-full h-14 rounded-xl bg-gradient-to-b from-[#121212] to-[#080808] border border-white/5 shadow-[6px_6px_16px_rgba(0,0,0,0.8),-3px_-3px_12px_rgba(255,255,255,0.012),inset_0_1px_0_rgba(255,255,255,0.03)] hover:border-white/10 transition-all text-white/40 cursor-not-allowed font-bold uppercase tracking-widest text-[9px] italic flex items-center justify-center">
+                    <Image src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width={18} height={18} className="mr-3 opacity-30 grayscale" unoptimized />
+                    Continue with Google <span className="ml-2 text-[8px] text-amber-500/80 font-semibold border border-amber-500/20 px-1.5 py-0.5 rounded uppercase tracking-normal font-sans">(Frozen)</span>
                   </Button>
                 </div>
               </motion.div>
@@ -320,9 +314,9 @@ export default function LoginPage() {
                   <Button onClick={() => setMethod("otp")} variant="outline" className="w-full h-14 rounded-xl bg-gradient-to-b from-[#121212] to-[#080808] border border-white/5 shadow-[6px_6px_16px_rgba(0,0,0,0.8),-3px_-3px_12px_rgba(255,255,255,0.012),inset_0_1px_0_rgba(255,255,255,0.03)] hover:border-white/10 hover:scale-[1.01] transition-all text-white font-bold uppercase tracking-widest text-[9px] italic flex items-center justify-center" disabled={loading}>
                     Use login code instead
                   </Button>
-                  <Button onClick={handleGoogleLogin} variant="outline" className="w-full h-14 rounded-xl bg-gradient-to-b from-[#121212] to-[#080808] border border-white/5 shadow-[6px_6px_16px_rgba(0,0,0,0.8),-3px_-3px_12px_rgba(255,255,255,0.012),inset_0_1px_0_rgba(255,255,255,0.03)] hover:border-white/10 hover:scale-[1.01] transition-all text-white font-bold uppercase tracking-widest text-[9px] italic flex items-center justify-center" disabled={loading}>
-                    <Image src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width={18} height={18} className="mr-3" unoptimized />
-                    Continue with Google
+                  <Button onClick={handleGoogleLogin} variant="outline" className="w-full h-14 rounded-xl bg-gradient-to-b from-[#121212] to-[#080808] border border-white/5 shadow-[6px_6px_16px_rgba(0,0,0,0.8),-3px_-3px_12px_rgba(255,255,255,0.012),inset_0_1px_0_rgba(255,255,255,0.03)] hover:border-white/10 transition-all text-white/40 cursor-not-allowed font-bold uppercase tracking-widest text-[9px] italic flex items-center justify-center">
+                    <Image src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width={18} height={18} className="mr-3 opacity-30 grayscale" unoptimized />
+                    Continue with Google <span className="ml-2 text-[8px] text-amber-500/80 font-semibold border border-amber-500/20 px-1.5 py-0.5 rounded uppercase tracking-normal font-sans">(Frozen)</span>
                   </Button>
                 </div>
               </motion.div>

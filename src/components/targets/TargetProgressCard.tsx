@@ -148,7 +148,7 @@ export function TargetProgressCard({ minimal = false }: { minimal?: boolean }) {
                       {selectedType} target goal
                     </span>
                     <p className="text-xs font-bold text-white truncate max-w-[220px]">
-                      {formatCurrency(progress.current)} of {formatCurrency(progress.monthlyTarget)} achieved
+                      {formatCurrency(progress.current)} of {formatCurrency(progress.target)} achieved
                     </p>
                   </div>
                 </div>
@@ -336,7 +336,7 @@ export function TargetProgressCard({ minimal = false }: { minimal?: boolean }) {
                           Monthly Goal
                         </span>
                         <span className="text-xl font-black text-white/70 tracking-tight">
-                          {formatCurrency(progress.monthlyTarget)}
+                          {formatCurrency(progress.target)}
                         </span>
                       </div>
                     </div>

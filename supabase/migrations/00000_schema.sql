@@ -37,7 +37,7 @@ CREATE TABLE public.users (
 -- RLS Helper Function: To get current user's organization_id securely
 CREATE OR REPLACE FUNCTION public.get_current_org_id()
 RETURNS uuid
-LANGUAGE sql STABLE
+LANGUAGE sql SECURITY DEFINER STABLE
 AS $$
   SELECT organization_id FROM public.users WHERE id = auth.uid();
 $$;

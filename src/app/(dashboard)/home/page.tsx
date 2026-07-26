@@ -21,8 +21,14 @@ import {
   Clock,
   History,
   MessageCircle,
-  ExternalLink
+  ExternalLink,
+  Shield,
+  MessageSquare,
+  AlertTriangle,
+  Calendar,
+  Loader2
 } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { getBusinessTemplate } from "@/lib/config/templates";
@@ -75,6 +81,135 @@ export default function DashboardPage() {
     enabled: mounted && Boolean(organization?.id),
     queryFn: () => invoicesApi.getOutstanding(),
   });
+
+  const supabase = createClient();
+
+  const { data: leadsData = [], isLoading: isLoadingLeads } = useQuery({
+    queryKey: ["dashboard-leads-ext", organization?.id],
+    enabled: mounted && Boolean(organization?.id),
+    queryFn: async () => {
+      try {
+        const { data, error } = await supabase
+          .from("external_leads")
+          .select("*")
+          .order("created_at", { ascending: false });
+        if (error) return [];
+        return data || [];
+      } catch {
+        return [];
+      }
+    }
+  });
+
+  const { data: warrantiesData = [], isLoading: isLoadingWarranties } = useQuery({
+    queryKey: ["dashboard-warranties-ext", organization?.id],
+    enabled: mounted && Boolean(organization?.id),
+    queryFn: async () => {
+      try {
+        const { data, error } = await supabase
+          .from("warranties")
+          .select("*")
+          .order("warranty_expires", { ascending: true });
+        if (error) return [];
+        return data || [];
+      } catch {
+        return [];
+      }
+    }
+  });
+
+  const safeLeads = Array.isArray(leadsData) ? leadsData : [];
+  const safeWarranties = Array.isArray(warrantiesData) ? warrantiesData : [];
+
+  // Leads calculations
+  const totalLeadsCount = safeLeads.length;
+  
+  const newLeadsTodayCount = safeLeads.filter(lead => {
+    if (!lead?.created_at) return false;
+    try {
+      const todayStr = new Date().toISOString().split("T")[0];
+      const leadDateStr = new Date(lead.created_at).toISOString().split("T")[0];
+      return leadDateStr === todayStr;
+    } catch {
+      return false;
+    }
+  }).length;
+
+  // Warranty calculations
+  const activeWarrantiesCount = safeWarranties.filter(w => w?.status === "active").length;
+
+  const amcDueThisMonthCount = safeWarranties.filter(w => {
+    if (!w?.amc_due_date) return false;
+    try {
+      const amcDate = new Date(w.amc_due_date);
+      if (isNaN(amcDate.getTime())) return false;
+      const today = new Date();
+      return amcDate.getFullYear() === today.getFullYear() && amcDate.getMonth() === today.getMonth();
+    } catch {
+      return false;
+    }
+  }).length;
+
+  // Alerts filtering
+  const expiringWarrantiesAlerts = safeWarranties.filter(w => {
+    if (!w || w.status !== "active" || !w.warranty_expires) return false;
+    try {
+      const expires = new Date(w.warranty_expires);
+      if (isNaN(expires.getTime())) return false;
+      const today = new Date();
+      const diffTime = expires.getTime() - today.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays >= 0 && diffDays <= 30;
+    } catch {
+      return false;
+    }
+  });
+
+  const amcDueWarrantiesAlerts = safeWarranties.filter(w => {
+    if (!w || !w.amc_due_date || w.status === "amc_completed") return false;
+    try {
+      const amcDue = new Date(w.amc_due_date);
+      if (isNaN(amcDue.getTime())) return false;
+      const today = new Date();
+      const diffTime = amcDue.getTime() - today.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays >= 0 && diffDays <= 30;
+    } catch {
+      return false;
+    }
+  });
+
+  // Time Ago helper
+  const getLeadTimeAgo = (dateStr?: string) => {
+    if (!dateStr) return "";
+    try {
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) return "";
+      const diffMs = Date.now() - date.getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+      if (diffMins < 1) return "Just now";
+      if (diffMins < 60) return `${diffMins}m ago`;
+      const diffHrs = Math.floor(diffMins / 60);
+      if (diffHrs < 24) return `${diffHrs}h ago`;
+      const diffDays = Math.floor(diffHrs / 24);
+      return `${diffDays}d ago`;
+    } catch {
+      return "";
+    }
+  };
+
+  // Status mapping colors helper
+  const getStatusColor = (status?: string) => {
+    switch (status) {
+      case "new": return "bg-blue-500/10 text-blue-400 border border-blue-500/20";
+      case "contacted": return "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20";
+      case "site_visit_scheduled": return "bg-amber-500/10 text-amber-400 border border-amber-500/20";
+      case "quotation_sent": return "bg-purple-500/10 text-purple-400 border border-purple-500/20";
+      case "installation_done": return "bg-teal-500/10 text-teal-400 border border-teal-500/20";
+      case "completed": return "bg-green-500/10 text-green-400 border border-green-500/20";
+      default: return "bg-white/10 text-white/40 border border-white/5";
+    }
+  };
 
   const handleWhatsAppReminder = async (invoice: Invoice) => {
     if (!invoice || invoice.amount_due <= 0) return;
@@ -538,6 +673,175 @@ export default function DashboardPage() {
              </Link>
            </div>
         </section>
+
+        {/* NEW EXTENSIONS: Leads and Warranties */}
+        <div className="border-t border-white/5 pt-8 space-y-6">
+          <div className="flex items-center gap-2">
+            <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#666] italic">Website Integrations & Services</h2>
+          </div>
+
+          {/* New Metrics Grid */}
+          <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+            <Card className="glass-panel border-l-2 border-l-blue-500/50">
+              <CardContent className="p-4">
+                <div className="mb-3 flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4 text-blue-400" />
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-blue-400">Total Leads</span>
+                </div>
+                <p className="text-xl font-black text-white">{isLoadingLeads ? "..." : totalLeadsCount}</p>
+                <p className="mt-1 text-[11px] text-muted-foreground">From connected websites</p>
+              </CardContent>
+            </Card>
+
+            <Card className="glass-panel border-l-2 border-l-indigo-500/50">
+              <CardContent className="p-4">
+                <div className="mb-3 flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4 text-indigo-400 animate-pulse" />
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-indigo-400">New Leads Today</span>
+                </div>
+                <p className="text-xl font-black text-white">{isLoadingLeads ? "..." : newLeadsTodayCount}</p>
+                <p className="mt-1 text-[11px] text-muted-foreground">Received in last 24h</p>
+              </CardContent>
+            </Card>
+
+            <Card className="glass-panel border-l-2 border-l-green-500/50">
+              <CardContent className="p-4">
+                <div className="mb-3 flex items-center gap-2">
+                  <Shield className="h-4 w-4 text-green-400" />
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-green-400">Active Warranties</span>
+                </div>
+                <p className="text-xl font-black text-white">{isLoadingWarranties ? "..." : activeWarrantiesCount}</p>
+                <p className="mt-1 text-[11px] text-muted-foreground">Client systems protected</p>
+              </CardContent>
+            </Card>
+
+            <Card className="glass-panel border-l-2 border-l-orange-500/50">
+              <CardContent className="p-4">
+                <div className="mb-3 flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-orange-400" />
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-orange-400">AMC Due This Month</span>
+                </div>
+                <p className="text-xl font-black text-white">{isLoadingWarranties ? "..." : amcDueThisMonthCount}</p>
+                <p className="mt-1 text-[11px] text-muted-foreground">Renewals this calendar month</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* New Sections: Recent Leads & Warranty Alerts */}
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
+            
+            {/* Recent Leads */}
+            <Card className="glass-panel">
+              <CardContent className="p-5 xl:p-6 flex flex-col h-full">
+                <div className="flex justify-between items-center mb-4">
+                  <div>
+                    <h2 className="text-lg font-black text-white italic uppercase tracking-tight">Recent Leads</h2>
+                    <p className="mt-1 text-sm text-muted-foreground">Latest inquiries received from website integrations</p>
+                  </div>
+                  <Link href="/leads" className="text-xs font-black text-accent uppercase tracking-widest italic flex items-center gap-1 hover:underline">
+                    View All <ArrowRight className="h-3 w-3" />
+                  </Link>
+                </div>
+
+                <div className="space-y-3 flex-1">
+                  {isLoadingLeads ? (
+                    <div className="flex items-center justify-center py-10">
+                      <Loader2 className="h-5 w-5 animate-spin text-accent" />
+                    </div>
+                  ) : safeLeads.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-10 opacity-30">
+                      <MessageSquare className="h-8 w-8 mb-2" />
+                      <p className="text-xs font-bold uppercase tracking-widest text-center">No leads recorded</p>
+                    </div>
+                  ) : (
+                    safeLeads.slice(0, 5).map((lead) => (
+                      <div key={lead.id} className="rounded-2xl border border-white/5 bg-white/[0.02] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-white/[0.04] transition-colors">
+                        <div className="space-y-1">
+                          <p className="text-sm font-bold text-white leading-tight">{lead.name}</p>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {lead.product_interest && (
+                              <span className="px-2 py-0.5 rounded-full bg-blue-500/10 text-[9px] font-black uppercase tracking-wider text-blue-400 border border-blue-500/20">
+                                {lead.product_interest}
+                              </span>
+                            )}
+                            <span className={cn("px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider", getStatusColor(lead.status))}>
+                              {lead.status ? lead.status.replace("_", " ") : "new"}
+                            </span>
+                          </div>
+                        </div>
+                        <p className="text-[10px] font-mono text-muted-foreground uppercase whitespace-nowrap shrink-0">
+                          {getLeadTimeAgo(lead.created_at)}
+                        </p>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Warranty Alerts */}
+            {safeWarranties.length > 0 && (
+              <Card className="glass-panel">
+                <CardContent className="p-5 xl:p-6 flex flex-col h-full">
+                  <h2 className="text-lg font-black text-white italic uppercase tracking-tight mb-4">Warranty Alerts</h2>
+                  
+                  <div className="space-y-3 flex-1 overflow-y-auto">
+                    {expiringWarrantiesAlerts.length === 0 && amcDueWarrantiesAlerts.length === 0 ? (
+                      <div className="h-full flex flex-col items-center justify-center py-10 text-center text-green-400 bg-green-500/[0.02] border border-green-500/20 rounded-2xl p-4">
+                        <ShieldCheck className="h-8 w-8 mb-2" />
+                        <p className="text-xs font-black uppercase tracking-widest">All Protected</p>
+                        <p className="text-[10px] text-muted-foreground mt-1 font-semibold uppercase leading-normal">
+                          All client warranties are active and up to date.
+                        </p>
+                      </div>
+                    ) : (
+                      <>
+                        {/* Expiring warranties */}
+                        {expiringWarrantiesAlerts.map(w => (
+                          <div key={w.id} className="rounded-2xl border border-amber-500/20 bg-amber-500/[0.03] p-3 flex flex-col gap-1.5">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <p className="text-xs font-bold text-white leading-tight">{w.customer_name}</p>
+                                <p className="text-[9px] text-muted-foreground uppercase font-semibold mt-0.5">{w.product_name}</p>
+                              </div>
+                              <span className="text-[8px] font-black uppercase tracking-widest text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded-full border border-amber-500/20">
+                                Expiring Soon
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1.5 text-[9px] text-amber-400 font-mono">
+                              <Calendar className="h-3 w-3" />
+                              <span>Expires: {w.warranty_expires ? new Date(w.warranty_expires).toLocaleDateString("en-IN") : "N/A"}</span>
+                            </div>
+                          </div>
+                        ))}
+
+                        {/* Due AMCs */}
+                        {amcDueWarrantiesAlerts.map(w => (
+                          <div key={w.id} className="rounded-2xl border border-orange-500/20 bg-orange-500/[0.03] p-3 flex flex-col gap-1.5">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <p className="text-xs font-bold text-white leading-tight">{w.customer_name}</p>
+                                <p className="text-[9px] text-muted-foreground uppercase font-semibold mt-0.5">{w.product_name}</p>
+                              </div>
+                              <span className="text-[8px] font-black uppercase tracking-widest text-orange-400 bg-orange-500/10 px-1.5 py-0.5 rounded-full border border-orange-500/20">
+                                AMC Due
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1.5 text-[9px] text-orange-400 font-mono">
+                              <Clock className="h-3 w-3 animate-pulse" />
+                              <span>Due Date: {w.amc_due_date ? new Date(w.amc_due_date).toLocaleDateString("en-IN") : "N/A"}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+          </div>
+        </div>
       </motion.div>
     </main>
   );

@@ -13,11 +13,13 @@ import {
   Receipt,
   Settings,
   ShieldCheck,
+  Shield,
   Users,
   Package,
   Truck,
   Network,
-  Inbox
+  Inbox,
+  MessageSquare
 } from "lucide-react";
 import { BottomNav } from "@/components/ui/BottomNav";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
@@ -31,6 +33,7 @@ interface AppChromeProps {
 const primaryLinks = [
   { href: "/home", label: "Home", icon: LayoutDashboard, allowedRoles: ["owner", "accountant", "manager", "viewer"] },
   { href: "/clients", label: "Contacts", icon: Users, allowedRoles: ["owner", "manager", "viewer"] },
+  { href: "/leads", label: "Leads", icon: MessageSquare, allowedRoles: ["owner", "manager", "viewer"] },
   { href: "/finance", label: "Money", icon: IndianRupee, allowedRoles: ["owner", "accountant", "viewer"] },
   { href: "/staff", label: "Staff", icon: ShieldCheck, allowedRoles: ["owner", "manager", "accountant", "viewer"] },
 ];
@@ -38,6 +41,7 @@ const primaryLinks = [
 const secondaryLinks = [
   { href: "/network", label: "Vendor Network", icon: Network, allowedRoles: ["owner", "accountant", "manager"] },
   { href: "/costing", label: "Costing & Margins", icon: BarChart3, allowedRoles: ["owner", "manager", "accountant"] },
+  { href: "/warranty", label: "Warranty Register", icon: Shield, allowedRoles: ["owner", "manager", "accountant", "viewer"] },
   { href: "/invoices/new", label: "New Bill", icon: FileText, allowedRoles: ["owner", "accountant"] },
   { href: "/expenses/new", label: "Log Expense", icon: Receipt, allowedRoles: ["owner", "accountant", "manager"] },
   { href: "/settings", label: "Settings", icon: Settings, allowedRoles: ["owner", "accountant", "manager", "viewer"] },

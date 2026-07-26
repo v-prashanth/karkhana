@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  Building2, FileText, ImageIcon, Save, Users, ShieldCheck,
+  Building2, FileText, ImageIcon, Save, Users, ShieldCheck, Key,
   CreditCard, Bell, Globe, Lock, Trash2, ChevronRight,
   Palette, Hash, Receipt, Banknote, QrCode, Pen,
   Mail, Phone, MapPin, Award, Factory, Calendar,
@@ -20,6 +20,7 @@ import { useToast } from "@/components/ui/Toaster";
 import { organizationApi } from "@/lib/api/organization";
 import { targetsApi } from "@/lib/api/targets";
 import { TargetSetupModal } from "@/components/targets/TargetSetupModal";
+import type { BusinessType } from "@/types/database";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 
@@ -57,7 +58,7 @@ export default function SettingsPage() {
   const activeTarget = activeTargets.find((t) => t.target_type === selectedTargetType);
   const [form, setForm] = useState({
     name: "", owner_name: "", address: "", phone: "", email: "",
-    gstin: "", logo_url: "", tagline: "",
+    gstin: "", logo_url: "", tagline: "", business_type: "manufacturing",
     capabilities: "", year_established: "", employee_count: "",
     brand_primary_color: "#ff7a1a", brand_secondary_color: "#171717",
     document_template: "modern",
@@ -79,6 +80,7 @@ export default function SettingsPage() {
       gstin: organization.gstin || "",
       logo_url: organization.logo_url || "",
       tagline: organization.tagline || "",
+      business_type: organization.business_type || "manufacturing",
       capabilities: organization.capabilities ? organization.capabilities.join(", ") : "",
       year_established: organization.year_established?.toString() || "",
       employee_count: organization.employee_count || "",
@@ -100,6 +102,7 @@ export default function SettingsPage() {
   const saveSettings = useMutation({
     mutationFn: () => organizationApi.update({
       ...form,
+      business_type: form.business_type as BusinessType,
       capabilities: typeof form.capabilities === "string"
         ? (form.capabilities as string).split(",").map(s => s.trim()).filter(Boolean)
         : form.capabilities,
@@ -324,6 +327,7 @@ export default function SettingsPage() {
                       try {
                         const nextOrg = await organizationApi.update({
                           ...form,
+                          business_type: form.business_type as BusinessType,
                           capabilities: typeof form.capabilities === "string"
                             ? (form.capabilities as string).split(",").map(s => s.trim()).filter(Boolean)
                             : form.capabilities,
@@ -691,6 +695,25 @@ export default function SettingsPage() {
                   <div className="text-left">
                     <p className="text-sm font-bold text-foreground">Enterprise Audit Center</p>
                     <p className="text-xs text-muted-foreground mt-0.5">View login history, document changes, and more</p>
+                  </div>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
+              </button>
+            </SettingsSection>
+
+            <SettingsSection
+              icon={Key} title="API & Integrations"
+              description="Manage API keys to connect external sites and services."
+            >
+              <button onClick={() => router.push("/settings/integrations")}
+                className="w-full flex items-center justify-between p-4 rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-colors group">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-xl bg-accent/10 flex items-center justify-center text-accent">
+                    <Key className="h-5 w-5" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm font-bold text-foreground">External API Keys</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Generate, view, and revoke API access keys</p>
                   </div>
                 </div>
                 <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />

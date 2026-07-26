@@ -11,7 +11,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- 1. HELPER FUNCTIONS
 -- ============================================================
 CREATE OR REPLACE FUNCTION public.get_current_org_id()
-RETURNS uuid LANGUAGE sql STABLE AS $$
+RETURNS uuid LANGUAGE sql SECURITY DEFINER STABLE AS $$
   SELECT organization_id FROM public.users WHERE id = auth.uid();
 $$;
 
