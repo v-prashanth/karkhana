@@ -588,6 +588,9 @@ export default function DashboardPage() {
 
                 <Link href="/finance/outstanding" className="inline-flex items-center gap-2 text-xs font-black text-accent uppercase tracking-widest italic group pt-4 mt-auto border-t border-white/5 w-full justify-center">
                   View all {outstandingInvoices.length > 3 ? `(${outstandingInvoices.length})` : ""}
+                  <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </div>
             </CardContent>
           </Card>
         </section>
