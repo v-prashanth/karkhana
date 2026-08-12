@@ -1065,6 +1065,21 @@ If the answer to any of these is "no," the feature should be reconsidered or pos
 
 ---
 
+# Strategic Wedge: The Job Work Material Liability Tracker
+
+### Market Reality & Competitive Landscape
+- **Tally Prime**: Has job work module, but desktop-only, complex UX, no native WhatsApp, ₹18,000/yr, requires trained accountant.
+- **ERPNext**: Open source, but overwhelming setup, non-India UX, requires IT team.
+- **Paper / Memory**: Current reality for 80%+ of Indian MSME job shops.
+
+### Karkhana's Differentiator
+Karkhana introduces the **Material Liability Tracker (CGST Sec 143 1-Year Rule)**:
+1. **Zero-Training Mobile UX**: Native WhatsApp notifications and big-button mobile interface.
+2. **Dual-Side Network Model**: Principal and Job Worker share the exact same ledger view automatically.
+3. **Automated Risk Mitigation**: 90-day, 30-day, and 7-day countdown alerts before principal incurs forced GST liability.
+
+---
+
 # Volume II Closing Statement
 
 Karkhana is not trying to replace every business application.

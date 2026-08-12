@@ -1863,6 +1863,35 @@ Phase 4
 
 ---
 
+# Job Work Management & Material Liability Tracker
+
+In Indian manufacturing (precision machining, fabrication, processing), job work is legally governed by **Rule 55 Delivery Challans** and **Section 143 of the CGST Act**.
+
+### The 1-Year Compliance Rule & Risk
+Section 143 requires that inputs sent to a job worker must be returned to the principal within **1 year** (365 days). If not returned, the principal faces a mandatory GST tax liability as a "deemed supply". Small job shops lack formal tracking, and principals rely on memory or disconnected spreadsheets, creating compliance friction.
+
+### Dual-Perspective Workflow Engine
+Karkhana provides a synchronized dual view:
+
+1. **Job Worker View (e.g. SVEW)**:
+   - **Receive Material**: Log client's DC details into virtual `Client Stock Tracker` (doesn't inflate SVEW's own asset balance sheet).
+   - **Job Order Processing**: Link job order to received client raw material.
+   - **Material Out**: Generate outward Rule 55 DC when machining is completed.
+   - **Raise Service Invoice**: Charge machining/conversion costs only (not material value).
+
+2. **Principal View (e.g. EPE, Ashalube)**:
+   - **Send Material**: Generate Rule 55 DC (14 mandatory fields) + auto E-Way Bill (> ₹50,000).
+   - **Virtual Godown**: Material moves to `Godown: Stock at Job Worker` (remains on principal balance sheet).
+   - **1-Year Countdown**: System initializes 365-day timer.
+   - **Receive Return**: Acknowledge return DC, reconcile quantities, and update ITC-4 records.
+
+### Material Liability Tracker & Shared Reconciliation View
+- **Proactive Expiry Alerts**: WhatsApp & In-App notifications sent to both parties at **90 days, 30 days, and 7 days** before the 1-year Section 143 deadline.
+- **Shared Reconciliation Ledger**: Real-time view accessible by both Principal and Job Worker:
+  `Item Name | Qty Sent | Qty Returned | Balance Qty | Days Left`
+
+---
+
 # Design Principles
 
 The Operations Module should feel:
