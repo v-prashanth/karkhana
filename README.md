@@ -1,6 +1,6 @@
-# Karkhana - Universal Business OS
+# Karkhana — Where Business Grows
 
-A modern, multi-tenant business management system built for manufacturing, trading, and service businesses. Manage orders, invoices, payments, expenses, staff, and more from a single dashboard.
+A modern, flexible operational system built for manufacturing, job shops, trading, and service businesses. Manage work orders, dispatches, invoices, payments, expenses, staff, and network operations from one connected workspace.
 
 ## Features
 

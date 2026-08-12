@@ -35,24 +35,24 @@ export default async function HomePage() {
           </div>
           <div>
             <span className="text-lg font-black uppercase tracking-[0.25em] text-white italic">Karkhana</span>
-            <p className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground">The Industrial System</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-accent">Where Business Grows</p>
           </div>
         </div>
 
         <div className="space-y-6">
           <div className="inline-flex items-center gap-2 rounded-full border border-white/5 bg-[#101010] px-4 py-2 text-[9px] font-black uppercase tracking-[0.25em] text-accent/90 shadow-[inset_2px_2px_6px_rgba(0,0,0,0.8)]">
             <ShieldCheck className="h-4 w-4 text-accent animate-pulse" />
-            Built for Indian SMBs & Factories
+            Built for Growing Indian Businesses & Job Shops
           </div>
 
           <h1 className="text-4xl font-black uppercase italic leading-[1.1] tracking-tight sm:text-6.5xl">
-            <span className="bg-gradient-to-r from-white via-white to-[#a6a6a6] bg-clip-text text-transparent">Run your business</span>
+            <span className="bg-gradient-to-r from-white via-white to-[#a6a6a6] bg-clip-text text-transparent">Where business</span>
             <br />
-            <span className="bg-gradient-to-r from-[#ffd700] via-accent to-accent bg-clip-text text-transparent">like a system.</span>
+            <span className="bg-gradient-to-r from-[#ffd700] via-accent to-accent bg-clip-text text-transparent">grows naturally.</span>
           </h1>
 
           <p className="max-w-xl text-sm leading-7 text-muted-foreground/85 font-light">
-            Karkhana replaces registers, loose paper, and WhatsApp confusion with a single premium workspace for contacts, work orders, bills, and payments.
+            Karkhana replaces registers, paper books, and memory-based tracking with a flexible, mobile-first workspace tailored specifically to how your business works.
           </p>
 
           <div className="flex flex-col gap-4 pt-4 sm:flex-row">
@@ -98,21 +98,9 @@ export default async function HomePage() {
           </div>
 
           {/* Trust Footer */}
-          <div className="pt-12 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-white/5 text-[9px] font-bold uppercase tracking-[0.25em] text-[#444]">
-            <div>
-              By continuing, you agree to our{" "}
-              <Link className="text-accent/60 hover:text-accent transition-colors underline" href="/privacy">
-                Privacy
-              </Link>{" "}
-              &{" "}
-              <Link className="text-accent/60 hover:text-accent transition-colors underline" href="/network-terms">
-                Terms
-              </Link>
-            </div>
-            <div className="text-[#555] flex items-center gap-1.5">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-              Secure SMB Portal
-            </div>
+          <div className="pt-8 border-t border-white/5 flex items-center justify-between text-xs text-muted-foreground/60">
+            <span>Karkhana — Where Business Grows</span>
+            <span>Made for Indian MSMEs</span>
           </div>
         </div>
       </div>

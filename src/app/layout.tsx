@@ -18,9 +18,9 @@ const dmMono = DM_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Karkhana - Universal Business OS",
+  title: "Karkhana — Where Business Grows",
   description:
-    "Mobile-first business management for Indian SMBs. Track contacts, work, invoices, payments, expenses, and reports from one operating system.",
+    "Flexible operational system built for growing Indian businesses. Track contacts, work orders, dispatches, invoices, and payments seamlessly.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

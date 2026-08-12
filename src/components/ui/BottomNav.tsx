@@ -4,12 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { 
   BriefcaseBusiness, IndianRupee, LayoutDashboard, Users, Network, 
-  Menu, X, FileText, Settings, ShieldCheck, Inbox, Truck, Box, Package,
+  Menu, X, FileText, Settings, ShieldCheck, Inbox, Truck, Package,
   BarChart3, Shield, MessageSquare
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { useStore } from "@/store/useStore";
+import { getBusinessTemplate } from "@/lib/config/templates";
 
 export function BottomNav() {
   const pathname = usePathname();
@@ -17,6 +18,7 @@ export function BottomNav() {
   const user = useStore((state) => state.user);
   
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const template = getBusinessTemplate(organization?.business_type);
 
   // Close menu on route change
   useEffect(() => {
@@ -28,24 +30,21 @@ export function BottomNav() {
     return null;
   }
 
+  const workLabel = template.orderLabel ? `${template.orderLabel}s` : "Work";
+
   const mainLinks = [
     { href: "/home", icon: LayoutDashboard, label: "Home", allowedRoles: ["owner", "accountant", "manager", "viewer"] },
-    { href: "/clients", icon: Users, label: "Contacts", allowedRoles: ["owner", "manager", "viewer"] }
+    { href: "/clients", icon: Users, label: "Contacts", allowedRoles: ["owner", "manager", "viewer"] },
+    { href: "/jobs", icon: template.hasPhysicalMovement ? Network : BriefcaseBusiness, label: workLabel, allowedRoles: ["owner", "manager", "viewer"] }
   ];
-
-  if (organization?.business_type === "manufacturing") {
-    mainLinks.push({ href: "/jobs", icon: Network, label: "Jobs", allowedRoles: ["owner", "manager"] });
-  } else {
-    mainLinks.push({ href: "/finance", icon: IndianRupee, label: "Money", allowedRoles: ["owner", "accountant", "viewer"] });
-  }
 
   const primaryNavLinks = mainLinks.filter(link => !user || link.allowedRoles.includes(user.role));
 
   const allMenuItems = [
-    ...(organization?.business_type === "manufacturing" ? [
-      { href: "/finance", icon: IndianRupee, label: "Money", desc: "Invoices & Payments", allowedRoles: ["owner", "accountant", "viewer"] },
-      { href: "/dc/inward", icon: Package, label: "Inward DC", desc: "Incoming materials", allowedRoles: ["owner", "manager", "viewer"] },
-      { href: "/dc/outward", icon: Truck, label: "Outward DC", desc: "Outgoing dispatches", allowedRoles: ["owner", "manager", "viewer"] }
+    { href: "/finance", icon: IndianRupee, label: "Money", desc: "Invoices & Payments", allowedRoles: ["owner", "accountant", "viewer"] },
+    ...(template.hasPhysicalMovement ? [
+      { href: "/dc/inward", icon: Package, label: template.receiveLabel || "Receive Material", desc: "Inward movement record", allowedRoles: ["owner", "manager", "viewer"] },
+      { href: "/dc/outward", icon: Truck, label: template.dispatchLabel || "Return Material", desc: "Outward movement dispatch", allowedRoles: ["owner", "manager", "viewer"] }
     ] : []),
     { href: "/invoices/new", icon: FileText, label: "New Bill", desc: "Generate a Tax Invoice", allowedRoles: ["owner", "accountant"] },
     { href: "/costing", icon: BarChart3, label: "Costing & Margins", desc: "Production costs & margins", allowedRoles: ["owner", "manager", "accountant"] },
@@ -98,82 +97,76 @@ export function BottomNav() {
           onClick={() => setIsMenuOpen(true)}
           className={cn(
             "relative flex flex-col items-center justify-center w-full h-full gap-1.5 transition-colors active:scale-95",
-            isMenuOpen ? "text-white" : "text-[#888]"
+            isMenuOpen ? "text-accent" : "text-[#888]"
           )}
         >
-          <div className="relative">
-            <Menu className="h-5 w-5" strokeWidth={isMenuOpen ? 2.5 : 1.8} />
-          </div>
-          <span className={cn("text-[10px] leading-none", isMenuOpen ? "font-bold" : "font-medium")}>More</span>
+          <Menu className="h-5 w-5" />
+          <span className="text-[10px] font-medium leading-none">More</span>
         </button>
       </nav>
 
-      {/* Drawer Overlay */}
+      {/* Fullscreen Mobile Drawer Menu */}
       <AnimatePresence>
         {isMenuOpen && (
-          <>
-            <motion.div
+          <div className="fixed inset-0 z-50 xl:hidden">
+            <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
               onClick={() => setIsMenuOpen(false)}
-              className="fixed inset-0 z-[45] bg-black/60 backdrop-blur-sm xl:hidden"
-              style={{ willChange: 'opacity' }}
+              className="absolute inset-0 bg-black/80 backdrop-blur-md"
             />
-            <motion.div
+            
+            <motion.div 
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
-              transition={{ type: "tween", duration: 0.2, ease: [0.32, 0.72, 0, 1] }}
-              className="fixed bottom-0 left-0 right-0 z-[50] rounded-t-[32px] bg-[#0a0a0a] border-t border-white/10 pb-safe shadow-[0_-20px_40px_rgba(0,0,0,0.5)] xl:hidden flex flex-col max-h-[85vh]"
-              style={{ willChange: 'transform' }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="absolute bottom-0 left-0 right-0 max-h-[85vh] rounded-t-3xl border-t border-white/10 bg-[#121212] p-6 pb-24 overflow-y-auto"
             >
-              <div className="sticky top-0 z-10 flex items-center justify-between border-b border-white/5 bg-[#0a0a0a]/90 backdrop-blur-md px-6 py-5">
-                <h2 className="text-sm font-black uppercase tracking-widest text-[#666]">More Options</h2>
+              <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-white">All Navigation</h3>
+                  <p className="text-xs text-accent">Where Business Grows</p>
+                </div>
                 <button 
                   onClick={() => setIsMenuOpen(false)}
-                  className="rounded-full bg-white/5 p-2 text-white hover:bg-white/10 transition-colors"
+                  className="rounded-full bg-white/5 p-2 text-white/70 hover:text-white"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-5 w-5" />
                 </button>
               </div>
-              
-              <div className="overflow-y-auto px-4 py-4 grid grid-cols-2 gap-3 mb-[72px]">
+
+              <div className="grid grid-cols-1 gap-2">
                 {allowedMenuItems.map((item) => {
-                  const ItemIcon = item.icon;
-                  const isItemActive = pathname.startsWith(item.href);
-                  
+                  const Icon = item.icon;
+                  const isActive = pathname.startsWith(item.href);
+
                   return (
                     <Link
-                      key={item.label}
+                      key={item.href}
                       href={item.href}
                       className={cn(
-                        "flex flex-col gap-3 rounded-2xl border p-4 transition-colors active:scale-95",
-                        isItemActive 
-                          ? "border-accent/20 bg-accent/5" 
-                          : "border-white/5 bg-white/[0.02] hover:bg-white/[0.04]"
+                        "flex items-center gap-4 rounded-2xl p-3.5 transition-all",
+                        isActive ? "bg-accent/15 border border-accent/30 text-white" : "bg-white/5 hover:bg-white/10 text-white/80"
                       )}
                     >
                       <div className={cn(
                         "flex h-10 w-10 items-center justify-center rounded-xl",
-                        isItemActive ? "bg-accent/20 text-accent" : "bg-white/5 text-muted-foreground"
+                        isActive ? "bg-accent text-white" : "bg-white/10 text-white/60"
                       )}>
-                        <ItemIcon className="h-5 w-5" />
+                        <Icon className="h-5 w-5" />
                       </div>
-                      <div>
-                        <p className={cn(
-                          "text-sm font-bold uppercase tracking-tight",
-                          isItemActive ? "text-accent" : "text-white"
-                        )}>{item.label}</p>
-                        <p className="mt-0.5 text-[10px] text-muted-foreground">{item.desc}</p>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-white truncate">{item.label}</p>
+                        <p className="text-xs text-white/50 truncate">{item.desc}</p>
                       </div>
                     </Link>
                   );
                 })}
               </div>
             </motion.div>
-          </>
+          </div>
         )}
       </AnimatePresence>
     </>

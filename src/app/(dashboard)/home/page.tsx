@@ -41,6 +41,7 @@ import { useToast } from "@/components/ui/Toaster";
 import { generatePaymentReminderWhatsAppMessage, generateWhatsAppLink } from "@/lib/utils/whatsapp";
 import type { DashboardMetrics, Invoice } from "@/types/database";
 import { TargetProgressCard } from "@/components/targets/TargetProgressCard";
+import { ActivityFeed } from "@/components/shared/ActivityFeed";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -503,18 +504,18 @@ export default function DashboardPage() {
               <h2 className="text-lg font-black text-white italic uppercase tracking-tight">Daily Guide</h2>
               <p className="mt-1 text-sm text-muted-foreground">The simple flow for Bharat&apos;s businesses.</p>
               <div className="mt-5 grid gap-3 xl:grid-cols-2">
-                {(organization?.business_type === "manufacturing"
+                {(template.hasPhysicalMovement
                   ? [
-                      { step: "1", title: "Inward DC", body: "Record incoming raw material.", href: "/dc/inward/new" },
-                      { step: "2", title: "Track Job", body: "Manage CNC/fabrication production.", href: "/orders/new" },
-                      { step: "3", title: "Outward DC", body: "Dispatch finished goods.", href: "/dc/outward/new" },
-                      { step: "4", title: "Generate Bill", body: "Convert DC to Invoice.", href: "/invoices/new" },
+                      { step: "1", title: template.receiveLabel || "Receive Material", body: "Record incoming raw material or goods.", href: "/dc/inward/new" },
+                      { step: "2", title: `Track ${template.orderLabel || "Job"}`, body: "Manage active work orders & production.", href: "/jobs" },
+                      { step: "3", title: template.dispatchLabel || "Return Material", body: "Dispatch completed work.", href: "/dc/outward/new" },
+                      { step: "4", title: "Generate Bill", body: "Convert work to Tax Invoice.", href: "/invoices/new" },
                     ]
                   : [
-                      { step: "1", title: "Save contact", body: "Add clients/suppliers with their +91 phone numbers.", href: "/contacts/new" },
-                      { step: "2", title: "Create bill", body: "Generate PDF/Link invoices instantly.", href: "/invoices/new" },
-                      { step: "3", title: "Send via WhatsApp", body: "1-Tap delivery to their phone with UPI link.", href: "/invoices" },
-                      { step: "4", title: "Record payment", body: "Auto-update outstanding balances on dashboard.", href: "/payments" },
+                      { step: "1", title: "Save contact", body: "Add clients/suppliers with their details.", href: "/clients" },
+                      { step: "2", title: `Create ${template.orderLabel || "Task"}`, body: "Track work & project progress.", href: "/jobs" },
+                      { step: "3", title: "Create bill", body: "Generate Tax Invoice for client.", href: "/invoices/new" },
+                      { step: "4", title: "Record payment", body: "Auto-update balance & collections.", href: "/finance" },
                     ]
                 ).map((item) => (
                   <Link key={item.step} href={item.href} className="rounded-2xl border border-white/5 bg-white/[0.02] p-4 transition-colors hover:bg-white/[0.05]">
@@ -587,41 +588,18 @@ export default function DashboardPage() {
 
                 <Link href="/finance/outstanding" className="inline-flex items-center gap-2 text-xs font-black text-accent uppercase tracking-widest italic group pt-4 mt-auto border-t border-white/5 w-full justify-center">
                   View all {outstandingInvoices.length > 3 ? `(${outstandingInvoices.length})` : ""}
-                  <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
-                </Link>
-              </div>
             </CardContent>
           </Card>
         </section>
 
         <section className="space-y-3">
           <div className="flex items-center justify-between px-1">
-            <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#666] italic">Recent Activity</h2>
+            <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#666] italic">Recent Activity History</h2>
             <Link href="/reports" className="text-[10px] font-black text-accent uppercase tracking-widest">Open reports</Link>
           </div>
           <Card className="glass-panel">
-            <CardContent className="space-y-3 p-4">
-              {(metrics?.recentActivity || []).length === 0 ? (
-                <div className="flex flex-col items-center justify-center p-8 text-center opacity-30">
-                  <Hammer className="mb-3 h-8 w-8 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground italic font-bold">No activity in the diary yet.</p>
-                </div>
-              ) : (
-                metrics?.recentActivity.map((activity) => (
-                  <div key={`${activity.type}-${activity.id}`} className="rounded-2xl border border-white/5 bg-white/[0.02] px-4 py-3">
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <p className="text-sm font-bold text-white uppercase tracking-tight">{activity.title}</p>
-                        <p className="mt-1 text-[10px] font-bold text-muted-foreground uppercase">{activity.subtitle}</p>
-                      </div>
-                      <div className="text-right">
-                        {activity.amount ? <p className="text-sm font-black text-white">{formatCurrency(activity.amount)}</p> : null}
-                        <p className="mt-1 text-[10px] font-mono text-muted-foreground uppercase">{new Date(activity.timestamp).toLocaleDateString("en-IN")}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
+            <CardContent className="p-4">
+              <ActivityFeed />
             </CardContent>
           </Card>
         </section>

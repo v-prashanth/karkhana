@@ -25,6 +25,7 @@ import { BottomNav } from "@/components/ui/BottomNav";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { cn } from "@/lib/utils";
 import { useStore } from "@/store/useStore";
+import { getBusinessTemplate } from "@/lib/config/templates";
 
 interface AppChromeProps {
   children: React.ReactNode;
@@ -59,20 +60,48 @@ export function AppChrome({ children }: AppChromeProps) {
   const pathname = usePathname();
   const user = useStore((state) => state.user);
   const organization = useStore((state) => state.organization);
-  
 
-  const isManufacturing = organization?.business_type === "manufacturing";
-
+  const template = getBusinessTemplate(organization?.business_type);
   const dynamicLinks = [...primaryLinks];
+
+  // Insert Work & Movement items dynamically based on Business Template
+  const workLabel = template.orderLabel ? `${template.orderLabel}s` : "Work";
   
-  if (isManufacturing) {
-    // Insert Jobs and DCs after Contacts (index 1)
-    dynamicLinks.splice(2, 0, 
-      { href: "/dc/inward", label: "Inward DC", icon: Package, allowedRoles: ["owner", "manager", "viewer"] },
-      { href: "/jobs", label: "Jobs", icon: Network, allowedRoles: ["owner", "manager", "viewer"] },
-      { href: "/dc/outward", label: "Outward DC", icon: Truck, allowedRoles: ["owner", "manager", "viewer"] },
-      { href: "/network/inbox", label: "PO Inbox", icon: Inbox, allowedRoles: ["owner", "manager"] }
+  if (template.hasPhysicalMovement) {
+    dynamicLinks.splice(2, 0,
+      { 
+        href: "/dc/inward", 
+        label: template.receiveLabel || "Receive Material", 
+        icon: Package, 
+        allowedRoles: ["owner", "manager", "viewer"] 
+      },
+      { 
+        href: "/jobs", 
+        label: workLabel, 
+        icon: Network, 
+        allowedRoles: ["owner", "manager", "viewer"] 
+      },
+      { 
+        href: "/dc/outward", 
+        label: template.dispatchLabel || "Return Material", 
+        icon: Truck, 
+        allowedRoles: ["owner", "manager", "viewer"] 
+      },
+      { 
+        href: "/network/inbox", 
+        label: "PO Inbox", 
+        icon: Inbox, 
+        allowedRoles: ["owner", "manager"] 
+      }
     );
+  } else {
+    // Services / Non-physical movement businesses: Only show Work / Projects tab
+    dynamicLinks.splice(2, 0, {
+      href: "/jobs",
+      label: workLabel,
+      icon: BriefcaseBusiness,
+      allowedRoles: ["owner", "manager", "viewer"]
+    });
   }
 
   const homeHref = user?.role === "worker" ? "/employee" : "/home";
@@ -91,7 +120,7 @@ export function AppChrome({ children }: AppChromeProps) {
               </div>
               <div>
                 <p className="text-lg font-semibold tracking-tight text-foreground">Karkhana</p>
-                <p className="text-xs text-muted-foreground">Built for daily business work</p>
+                <p className="text-xs font-medium text-accent">Where Business Grows</p>
               </div>
             </div>
           </Link>
