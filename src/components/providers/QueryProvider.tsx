@@ -9,12 +9,12 @@ export function QueryProvider({ children }: { children: ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 1000 * 60 * 5,    // 5 minutes before considering data stale
-            gcTime: 1000 * 60 * 60 * 24, // Keep cache in memory for 24 hours!
-            retry: 3,                    // Retry 3 times for flaky warehouse connections
-            retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
-            refetchOnWindowFocus: true,  // Important: Since we have long stale times, we want fresh data when they reopen the app
-            networkMode: 'offlineFirst', // CRITICAL: Always return cache immediately, even if offline
+            staleTime: 1000 * 60 * 5,       // 5 minutes cache before considering stale
+            gcTime: 1000 * 60 * 60 * 24,    // Keep cache in memory for 24 hours
+            retry: 1,                       // Fast 1-retry fallback
+            refetchOnWindowFocus: false,    // Prevent laggy refetch freezes on window focus
+            refetchOnReconnect: false,      // Prevent refetch lag on network reconnect
+            networkMode: 'offlineFirst',    // Return cached data instantly
           },
           mutations: {
             networkMode: 'offlineFirst',

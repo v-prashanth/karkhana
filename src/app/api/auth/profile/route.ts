@@ -14,9 +14,8 @@ export async function GET() {
     return NextResponse.json({ user: null, organization: null });
   }
 
-  const admin = createAdminClient();
-
-  const { data: profile, error: profileError } = await admin
+  // 1. Fetch user & organization using session-scoped RLS client
+  const { data: profile, error: profileError } = await supabase
     .from("users")
     .select("*, organization:organizations(*)")
     .eq("id", authUser.id)
@@ -46,6 +45,8 @@ export async function GET() {
     });
   }
 
+  // 2. Initial Onboarding Fallback: provision organization for brand new signups
+  const admin = createAdminClient();
   const now = new Date();
   const startYear = now.getMonth() >= 3 ? now.getFullYear() : now.getFullYear() - 1;
   const financialYear = `${startYear}-${(startYear + 1).toString().slice(-2)}`;
@@ -128,9 +129,9 @@ export async function PATCH(req: Request) {
 
   try {
     const updates = await req.json();
-    const admin = createAdminClient();
 
-    const { data: updatedUser, error } = await admin
+    // Session-scoped update using authUser.id
+    const { data: updatedUser, error } = await supabase
       .from("users")
       .update({
         name: updates.name,

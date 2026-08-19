@@ -134,6 +134,7 @@ export default function OrdersPage() {
 
               return (
                 <motion.div key={order.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+                  <Link href={`/jobs/${order.id}`}>
                   <Card className={cn("glass-panel group overflow-hidden transition-colors hover:bg-white/[0.03]", order.priority === "urgent" && "border-l-2 border-l-red-500")}>
                     <CardContent className="p-4">
                       <div className="mb-2 flex items-start justify-between">
@@ -174,6 +175,7 @@ export default function OrdersPage() {
                       </div>
                     </CardContent>
                   </Card>
+                  </Link>
                 </motion.div>
               );
             })}

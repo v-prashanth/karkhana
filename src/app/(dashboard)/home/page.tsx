@@ -26,7 +26,8 @@ import {
   MessageSquare,
   AlertTriangle,
   Calendar,
-  Loader2
+  Loader2,
+  Timer
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -121,6 +122,25 @@ export default function DashboardPage() {
 
   const safeLeads = Array.isArray(leadsData) ? leadsData : [];
   const safeWarranties = Array.isArray(warrantiesData) ? warrantiesData : [];
+
+  // Job Work material liability (CGST Sec. 143)
+  const { data: jobWorkData = [] } = useQuery({
+    queryKey: ["dashboard-job-work-expiry", organization?.id],
+    enabled: mounted && Boolean(organization?.id),
+    queryFn: async () => {
+      try {
+        const res = await fetch("/api/job-work");
+        if (!res.ok) return [];
+        return res.json();
+      } catch { return []; }
+    },
+  });
+
+  const criticalChallans = (Array.isArray(jobWorkData) ? jobWorkData : []).filter((c: { expiry_date: string; status: string }) => {
+    if (c.status === "FULLY_RETURNED") return false;
+    const days = Math.ceil((new Date(c.expiry_date).getTime() - Date.now()) / 86400000);
+    return days >= 0 && days <= 30;
+  });
 
   // Leads calculations
   const totalLeadsCount = safeLeads.length;
@@ -823,6 +843,56 @@ export default function DashboardPage() {
 
           </div>
         </div>
+
+        {/* ── Material Liability Widget (Manufacturing) ── */}
+        {criticalChallans.length > 0 && (
+          <div className="border-t border-white/5 pt-8 space-y-3">
+            <div className="flex items-center justify-between px-1">
+              <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#666] italic">Material Liability Alert</h2>
+              <Link href="/job-work" className="text-[10px] font-black text-accent uppercase tracking-widest">View all</Link>
+            </div>
+            <Card className="glass-panel border-red-500/30">
+              <CardContent className="p-5 space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="h-10 w-10 rounded-xl bg-red-500/10 flex items-center justify-center shrink-0">
+                    <Timer className="h-5 w-5 text-red-400 animate-pulse" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-black text-red-400 uppercase italic tracking-wide">
+                      {criticalChallans.length} Job Work {criticalChallans.length === 1 ? "Challan" : "Challans"} Expiring Soon!
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                      CGST Sec. 143 requires return of job work material within 1 year. Material not returned becomes a deemed supply.
+                    </p>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  {criticalChallans.slice(0, 3).map((c: { id: string; challan_number: string; expiry_date: string; job_worker_name: string }) => {
+                    const days = Math.ceil((new Date(c.expiry_date).getTime() - Date.now()) / 86400000);
+                    return (
+                      <Link key={c.id} href={`/job-work/${c.id}`}>
+                        <div className="flex items-center justify-between rounded-xl border border-red-500/20 bg-red-500/[0.03] px-3 py-2 hover:bg-red-500/[0.06] transition-colors">
+                          <div>
+                            <p className="text-xs font-bold text-white">#{c.challan_number}</p>
+                            <p className="text-[10px] text-muted-foreground">{c.job_worker_name}</p>
+                          </div>
+                          <span className="text-[10px] font-black text-red-400">{days}d left</span>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+                <Link
+                  href="/job-work"
+                  className="flex items-center justify-center gap-2 rounded-xl border border-red-500/20 bg-red-500/5 py-2.5 text-[10px] font-black uppercase tracking-widest text-red-400 hover:bg-red-500/10 transition-colors"
+                >
+                  <AlertTriangle className="h-3.5 w-3.5" /> Manage Job Work Challans
+                </Link>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
       </motion.div>
     </main>
   );

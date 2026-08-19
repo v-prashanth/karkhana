@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useFieldArray, useForm } from "react-hook-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Copy, Download, ExternalLink, FileOutput, Link2, Plus, Share2, Trash2 } from "lucide-react";
@@ -34,8 +34,10 @@ type InvoiceForm = {
   items: InvoiceItemForm[];
 };
 
-export default function NewInvoicePage() {
+function NewInvoicePageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const fromJobId = searchParams.get("from_job");
   const queryClient = useQueryClient();
   const { organization, user } = useStore();
   const { toast } = useToast();
@@ -44,6 +46,7 @@ export default function NewInvoicePage() {
   const [savedInvoice, setSavedInvoice] = useState<Invoice | null>(null);
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [limitMessage, setLimitMessage] = useState("");
+  const [jobPrefilled, setJobPrefilled] = useState(false);
   const pdfPreviewUrl = useMemo(() => (pdfBlob ? URL.createObjectURL(pdfBlob) : null), [pdfBlob]);
 
   useEffect(() => {
@@ -58,7 +61,7 @@ export default function NewInvoicePage() {
     queryFn: () => contactsApi.list("client"),
   });
 
-  const { register, control, handleSubmit, watch } = useForm<InvoiceForm>({
+  const { register, control, handleSubmit, watch, setValue } = useForm<InvoiceForm>({
     defaultValues: {
       contactId: "",
       clientReference: "",
@@ -71,6 +74,27 @@ export default function NewInvoicePage() {
   const { fields, append, remove } = useFieldArray({ control, name: "items" });
   const formValues = watch();
   const selectedContact = contacts.find((contact) => contact.id === formValues.contactId);
+
+  // Pre-fill from job (when navigated from /jobs/[id] via ?from_job=<id>)
+  const { data: jobDataForInvoice } = useQuery({
+    queryKey: ["job-for-invoice", fromJobId],
+    enabled: Boolean(fromJobId) && !jobPrefilled && contacts.length > 0,
+    queryFn: async () => {
+      const res = await fetch(`/api/jobs/${fromJobId}`);
+      if (!res.ok) return null;
+      return res.json();
+    },
+  });
+
+  // Apply job data to form once contacts are loaded
+  useEffect(() => {
+    if (!jobDataForInvoice || jobPrefilled) return;
+    setJobPrefilled(true);
+    const job = jobDataForInvoice as { description?: string; reference_number?: string; quantity?: number; contact?: { id?: string } };
+    if (job.contact?.id) setValue("contactId", job.contact.id);
+    if (job.reference_number) setValue("clientReference", job.reference_number);
+    setValue("items", [{ particulars: job.description || "Job Work", qty: job.quantity || 1, rate: 0 }]);
+  }, [jobDataForInvoice, jobPrefilled, setValue]);
 
   const subtotal = formValues.items?.reduce((acc, item) => acc + (Number(item.qty || 0) * Number(item.rate || 0)), 0) || 0;
   const gstAmount = formValues.gstApplicable ? subtotal * 0.18 : 0;
@@ -382,5 +406,13 @@ export default function NewInvoicePage() {
         message={limitMessage}
       />
     </main>
+  );
+}
+
+export default function NewInvoicePage() {
+  return (
+    <Suspense fallback={<main className="flex min-h-screen items-center justify-center bg-background"><div className="h-8 w-8 animate-spin rounded-full border-2 border-accent border-t-transparent" /></main>}>
+      <NewInvoicePageContent />
+    </Suspense>
   );
 }

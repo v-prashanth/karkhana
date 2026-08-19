@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { 
   BriefcaseBusiness, IndianRupee, LayoutDashboard, Users, Network, 
   Menu, X, FileText, Settings, ShieldCheck, Inbox, Truck, Package,
-  BarChart3, Shield, MessageSquare
+  BarChart3, Shield, MessageSquare, Timer
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -44,7 +44,8 @@ export function BottomNav() {
     { href: "/finance", icon: IndianRupee, label: "Money", desc: "Invoices & Payments", allowedRoles: ["owner", "accountant", "viewer"] },
     ...(template.hasPhysicalMovement ? [
       { href: "/dc/inward", icon: Package, label: template.receiveLabel || "Receive Material", desc: "Inward movement record", allowedRoles: ["owner", "manager", "viewer"] },
-      { href: "/dc/outward", icon: Truck, label: template.dispatchLabel || "Return Material", desc: "Outward movement dispatch", allowedRoles: ["owner", "manager", "viewer"] }
+      { href: "/dc/outward", icon: Truck, label: template.dispatchLabel || "Return Material", desc: "Outward movement dispatch", allowedRoles: ["owner", "manager", "viewer"] },
+      { href: "/job-work", icon: Timer, label: "Job Work Challans", desc: "CGST Sec. 143 compliance tracker", allowedRoles: ["owner", "manager", "accountant"] }
     ] : []),
     { href: "/invoices/new", icon: FileText, label: "New Bill", desc: "Generate a Tax Invoice", allowedRoles: ["owner", "accountant"] },
     { href: "/costing", icon: BarChart3, label: "Costing & Margins", desc: "Production costs & margins", allowedRoles: ["owner", "manager", "accountant"] },

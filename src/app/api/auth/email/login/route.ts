@@ -3,12 +3,11 @@ import { rateLimit, LIMITS } from "@/lib/api/security/rate-limit";
 import { securityLogger } from "@/lib/api/security/logger";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-function sanitize(str: string) { return str.replace(/<[^>]*>/g, "").trim(); }
 import validator from "validator";
 
-// Fallback to anon key if service key is missing
+function sanitize(str: string) { return str.replace(/<[^>]*>/g, "").trim(); }
+
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 export async function POST(request: Request) {
   try {
@@ -19,20 +18,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid credentials" }, { status: 400 });
     }
 
-    const ip = request.headers.get("x-forwarded-for") || "unknown";
+    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "127.0.0.1";
     const userAgent = request.headers.get("user-agent") || "unknown";
 
-    // 1. Rate Limiting / Lockout Check
-    // We limit by both IP and email to prevent brute forcing
-    const ipLimitKey = `login_ip:${ip}`;
-    const emailLimitKey = `login_email:${sanitizedEmail}`;
-    
-    const [ipRl, emailRl] = await Promise.all([
-      rateLimit(ipLimitKey, LIMITS.LOGIN_ATTEMPTS.limit, LIMITS.LOGIN_ATTEMPTS.window),
-      rateLimit(emailLimitKey, LIMITS.LOGIN_ATTEMPTS.limit, LIMITS.LOGIN_ATTEMPTS.window)
-    ]);
+    // Rate Limiting: 5 attempts per 15 min per IP
+    const ipLimitKey = `login:${ip}`;
+    const rl = await rateLimit(ipLimitKey, LIMITS.LOGIN_ATTEMPTS.limit, LIMITS.LOGIN_ATTEMPTS.window);
 
-    if (!ipRl.success || !emailRl.success) {
+    if (!rl.success) {
       await securityLogger.log({
         identifier: sanitizedEmail,
         eventType: "account_locked",
@@ -41,15 +34,15 @@ export async function POST(request: Request) {
         details: { reason: "too_many_attempts" }
       });
       return NextResponse.json({ 
-        error: "Too many failed attempts. Account locked for 15 minutes." 
+        error: "Too many attempts. Try again in 15 minutes." 
       }, { status: 429 });
     }
 
-    // 2. Setup Supabase Client to automatically handle cookies
+    // Setup Supabase Client
     const cookieStore = cookies();
     const supabase = createServerClient(
       supabaseUrl,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, // Use anon key for user login to respect normal flow
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         cookies: {
           get(name: string) { return cookieStore.get(name)?.value; },
@@ -63,14 +56,13 @@ export async function POST(request: Request) {
       }
     );
 
-    // 3. Attempt Login
+    // Attempt Login
     const { data, error } = await supabase.auth.signInWithPassword({
       email: sanitizedEmail,
       password,
     });
 
     if (error) {
-      // Log failed attempt
       await securityLogger.log({
         identifier: sanitizedEmail,
         eventType: "login_failed",
@@ -78,11 +70,9 @@ export async function POST(request: Request) {
         userAgent,
         details: { reason: "invalid_credentials" }
       });
-      // Generic error message
       return NextResponse.json({ error: "Incorrect email or password" }, { status: 401 });
     }
 
-    // 4. Log success
     await securityLogger.log({
       userId: data.user.id,
       identifier: sanitizedEmail,
@@ -91,9 +81,6 @@ export async function POST(request: Request) {
       userAgent,
       details: { method: "email_password" }
     });
-
-    // Note: In Phase 3, we will add 2FA logic here before returning success
-    // If 2FA is enabled, we would NOT set the final cookie yet, but return { requires2FA: true }
 
     return NextResponse.json({ success: true, user: data.user, session: data.session });
   } catch (error) {

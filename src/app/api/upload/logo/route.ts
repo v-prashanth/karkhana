@@ -1,41 +1,25 @@
 import { NextResponse } from "next/server";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { getSecureServerSession } from "@/lib/supabase/server";
 
 export async function POST(req: Request) {
   try {
-    const supabase = createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const { user, organizationId, supabase } = await getSecureServerSession();
 
-    if (!user) {
+    if (!user || !organizationId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const formData = await req.formData();
     const file = formData.get("file") as File;
-    const orgId = formData.get("orgId") as string;
 
-    if (!file || !orgId) {
-      return NextResponse.json({ error: "Missing file or orgId" }, { status: 400 });
-    }
-
-    const admin = createAdminClient();
-    
-    // Ensure bucket exists (fallback if migration wasn't run)
-    try {
-      const { data: buckets } = await admin.storage.listBuckets();
-      if (!buckets?.find(b => b.name === 'logos')) {
-        await admin.storage.createBucket('logos', { public: true });
-      }
-    } catch (e) {
-      console.warn("Could not verify/create bucket:", e);
+    if (!file) {
+      return NextResponse.json({ error: "Missing file" }, { status: 400 });
     }
 
     const fileExt = file.name.split(".").pop();
-    const fileName = `${orgId}-${Date.now()}.${fileExt}`;
+    const fileName = `${organizationId}-${Date.now()}.${fileExt}`;
 
-    // Upload using admin client to bypass any missing RLS policies temporarily for MVP
-    const { error: uploadError } = await admin.storage
+    const { error: uploadError } = await supabase.storage
       .from("logos")
       .upload(fileName, file, {
         cacheControl: "3600",
@@ -44,7 +28,7 @@ export async function POST(req: Request) {
 
     if (uploadError) throw uploadError;
 
-    const { data: { publicUrl } } = admin.storage
+    const { data: { publicUrl } } = supabase.storage
       .from("logos")
       .getPublicUrl(fileName);
 

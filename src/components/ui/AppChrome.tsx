@@ -19,7 +19,8 @@ import {
   Truck,
   Network,
   Inbox,
-  MessageSquare
+  MessageSquare,
+  Timer
 } from "lucide-react";
 import { BottomNav } from "@/components/ui/BottomNav";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
@@ -86,6 +87,12 @@ export function AppChrome({ children }: AppChromeProps) {
         label: template.dispatchLabel || "Return Material", 
         icon: Truck, 
         allowedRoles: ["owner", "manager", "viewer"] 
+      },
+      { 
+        href: "/job-work", 
+        label: "Job Work Challans", 
+        icon: Timer, 
+        allowedRoles: ["owner", "manager", "accountant"] 
       },
       { 
         href: "/network/inbox", 

@@ -1,14 +1,16 @@
 import { NextResponse } from "next/server";
+import { rateLimit, LIMITS } from "@/lib/api/security/rate-limit";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendAuthEmail } from "@/lib/auth/mailer";
-import { registerLimiter } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
   try {
-    // Rate limit: 3 registration attempts per IP per hour
-    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-    const { success } = registerLimiter.check(ip);
-    if (!success) {
+    // Rate Limiting: 10 per hour per IP
+    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "127.0.0.1";
+    const registerLimitKey = `register:${ip}`;
+    const rl = await rateLimit(registerLimitKey, LIMITS.REGISTER.limit, LIMITS.REGISTER.window);
+
+    if (!rl.success) {
       return NextResponse.json(
         { error: "Too many registration attempts. Please try again later." },
         { status: 429 }
